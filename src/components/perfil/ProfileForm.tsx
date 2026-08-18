@@ -1,0 +1,48 @@
+'use client'
+
+import { useActionState } from 'react'
+
+import { updateProfile } from '@/app/dashboard/perfil/actions'
+import { Alert } from '@/components/ui/Alert'
+import { SubmitButton } from '@/components/ui/SubmitButton'
+import { TextField } from '@/components/ui/TextField'
+import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { MAX_LENGTHS } from '@/lib/validation'
+import type { Profile } from '@/types'
+
+export function ProfileForm({ profile }: { profile: Profile | null }) {
+  const [state, formAction] = useActionState(updateProfile, EMPTY_FORM_STATE)
+
+  const fieldError = (field: string) => state.fieldErrors?.[field]
+
+  return (
+    <form action={formAction} className="flex flex-col gap-5">
+      {state.error ? <Alert variant="error">{state.error}</Alert> : null}
+      {state.success ? <Alert variant="success">{state.success}</Alert> : null}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField
+          label="Seu nome completo"
+          name="name"
+          autoComplete="name"
+          required
+          maxLength={MAX_LENGTHS.nome}
+          defaultValue={state.values?.name ?? profile?.name ?? ''}
+          error={fieldError('name')}
+        />
+        <TextField
+          label="Superior imediato"
+          name="supervisor_name"
+          required
+          maxLength={MAX_LENGTHS.nome}
+          defaultValue={state.values?.supervisor_name ?? profile?.supervisor_name ?? ''}
+          error={fieldError('supervisor_name')}
+        />
+      </div>
+
+      <div>
+        <SubmitButton pendingLabel="Salvando...">Salvar</SubmitButton>
+      </div>
+    </form>
+  )
+}

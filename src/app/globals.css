@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+
+/* Paleta e tokens do app. */
+@theme {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+/* Some tudo que não for o relatório na hora de imprimir (usado na F6). */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
