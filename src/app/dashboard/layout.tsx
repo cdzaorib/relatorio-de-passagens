@@ -27,9 +27,22 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="min-h-screen">
       <header className="no-print border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link href="/dashboard" className="font-semibold text-slate-900">
-            Reembolso de passagem
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link href="/dashboard" className="font-semibold text-slate-900">
+              Reembolso de passagem
+            </Link>
+            <nav className="flex items-center gap-4 text-sm">
+              <Link href="/dashboard" className="text-slate-600 transition hover:text-slate-900">
+                Início
+              </Link>
+              <Link
+                href="/dashboard/perfil"
+                className="text-slate-600 transition hover:text-slate-900"
+              >
+                Perfil
+              </Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             <span className="hidden text-sm text-slate-600 sm:inline">{displayName}</span>

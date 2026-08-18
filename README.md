@@ -85,6 +85,22 @@ secreta do Supabase (`SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY`)
 ignora a RLS por completo — ela só é lida em código de servidor e nunca pode
 aparecer em variável `NEXT_PUBLIC_*`.
 
+## Perfil e preços
+
+Em `/dashboard/perfil` ficam o nome e o superior imediato (o cabeçalho do
+relatório) e a tabela de passagens.
+
+Cadastrar a passagem uma vez basta: o valor é reaproveitado a cada
+lançamento. No reajuste, use **Editar** — mudou o valor, o registro atual é
+desativado e nasce outro no mesmo grupo, então o histórico fica de pé e os
+trechos antigos continuam com o valor da época. Mudou só o nome, o transporte
+ou o cartão, a alteração é feita no próprio registro, porque aí não houve
+reajuste nenhum.
+
+**Arquivar** tira a passagem da lista sem apagar nada.
+
+O campo de valor aceita `4,70`, `R$ 4,70`, `4.70` ou `1.234,56`.
+
 ## Estrutura
 
 ```
@@ -92,10 +108,12 @@ src/
   app/                 rotas (App Router)
   components/
     auth/              formulários de login, cadastro e senha
-    ui/                campo, alerta e botão de envio
+    perfil/            dados do cabeçalho e CRUD de passagens
+    ui/                campo, seleção, alerta e botão de envio
   lib/
     env.ts             leitura das variáveis de ambiente
     form-state.ts      estado devolvido pelas actions de formulário
+    format.ts          valores em reais e datas em pt-BR
     rate-limit.ts      trava de repetição no envio de e-mail
     resend.ts          e-mail de redefinição de senha
     validation.ts      validações e tradução dos erros do Supabase
@@ -149,7 +167,7 @@ Detalhes que valem lembrar:
 
 - [x] **F1** Setup: projeto, Supabase clients, tipos, schema SQL + RLS
 - [x] **F2** Auth: login, cadastro, recuperação de senha, middleware
-- [ ] **F3** Perfil: nome, superior e CRUD de preços com histórico
+- [x] **F3** Perfil: nome, superior e CRUD de preços com histórico
 - [ ] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
       (cadastrar e aplicar em uma data), tabela editável
 - [ ] **F5** Filtro de período e cards de resumo
