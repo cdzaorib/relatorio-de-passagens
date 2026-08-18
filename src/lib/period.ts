@@ -94,7 +94,12 @@ export function formatPeriodLabel({ from, to }: Period): string {
   return `${short(from)} a ${short(to)}`
 }
 
+/** Query string do período: '?de=2026-08-01&ate=2026-08-15'. */
+export function periodQuery({ from, to }: Period): string {
+  return `?de=${from}&ate=${to}`
+}
+
 /** Monta a URL do dashboard para um período. */
-export function periodHref({ from, to }: Period): string {
-  return `/dashboard?de=${from}&ate=${to}`
+export function periodHref(period: Period): string {
+  return `/dashboard${periodQuery(period)}`
 }

@@ -9,6 +9,7 @@ planilha Excel preenchida à mão.
 - **Next.js 15** (App Router) + **TypeScript** + **Tailwind CSS 4**
 - **Supabase** — Postgres, Auth (e-mail/senha) e RLS
 - **Resend** — e-mail de redefinição de senha
+- **pdf-lib** — geração do PDF
 - **Vercel** — deploy
 
 ## Como rodar localmente
@@ -171,6 +172,29 @@ biblioteca de UI: `TextField` e `SelectField` cuidam de rótulo, dica, erro e
 autocomplete; `SubmitButton` desabilita e mostra progresso pelo `useFormStatus`
 com um SVG próprio; `Card` agrupa o conteúdo das páginas.
 
+## PDF
+
+O botão **Baixar PDF** no relatório chama `/dashboard/relatorio/pdf`, que lê o
+mesmo período da tela e devolve o arquivo com `Content-Disposition:
+attachment` — o navegador baixa direto, sem abrir aba nem passar por diálogo
+de impressão. O nome sai como `reembolso-2026-08-01-a-2026-08-15.pdf`.
+
+A montagem está em `src/lib/pdf.ts`, com **pdf-lib**: JavaScript puro, sem
+binário nativo e sem arquivos de fonte para empacotar, então sobe na Vercel
+sem configuração. Puppeteer exigiria um Chromium dentro da função e o PDFKit
+precisaria levar métricas de fonte que costumam quebrar no build.
+
+Detalhes que valem saber:
+
+- A4 retrato, cabeçalho com funcionário, superior e período, tabela zebrada e
+  rodapé com os dois totais e o total geral.
+- Quebra de página repete o cabeçalho da tabela; os totais nunca se partem ao
+  meio, e a numeração sai como `Página 2 de 3`.
+- Texto que não cabe na coluna é cortado com reticências.
+- As fontes padrão do PDF usam WinAnsi, que cobre o português mas não tudo;
+  `sanitize()` troca aspas curvas, travessões e qualquer caractere de fora
+  antes de desenhar — um só derrubaria a geração inteira.
+
 ## Estrutura
 
 ```
@@ -189,6 +213,7 @@ src/
     format.ts          valores em reais e datas em pt-BR
     fares.ts           passagem escolhida preenchendo o trecho
     suggestions.ts     autocomplete de bairros e clientes
+    pdf.ts             montagem do PDF do relatório
     period.ts          período do relatório, quinzenas e leitura da URL
     report.ts          totais por cartão, trechos e dias
     trips.ts           espelho da volta e montagem dos trechos

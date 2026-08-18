@@ -5,7 +5,7 @@ import { PeriodFilter } from '@/components/dashboard/PeriodFilter'
 import { ReportPreview } from '@/components/dashboard/ReportPreview'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { todayISO } from '@/lib/format'
-import { resolvePeriod } from '@/lib/period'
+import { periodQuery, resolvePeriod } from '@/lib/period'
 import { readStoredPeriod } from '@/lib/period-cookie'
 import { summarize } from '@/lib/report'
 import { createClient } from '@/lib/supabase/server'
@@ -52,12 +52,30 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/trips"
-          className="rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700"
-        >
-          Lançar trechos
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/dashboard/trips"
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100"
+          >
+            Lançar trechos
+          </Link>
+
+          {trips.length > 0 ? (
+            <a
+              href={`/dashboard/relatorio/pdf${periodQuery(period)}`}
+              className="rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700"
+            >
+              Baixar PDF
+            </a>
+          ) : (
+            <span
+              className="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2.5 font-medium text-slate-500"
+              title="Lance ao menos um trecho no período para gerar o PDF."
+            >
+              Baixar PDF
+            </span>
+          )}
+        </div>
       </div>
 
       <PeriodFilter period={period} today={today} />
