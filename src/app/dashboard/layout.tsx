@@ -36,6 +36,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 Início
               </Link>
               <Link
+                href="/dashboard/trips"
+                className="text-slate-600 transition hover:text-slate-900"
+              >
+                Trechos
+              </Link>
+              <Link
+                href="/dashboard/locais"
+                className="text-slate-600 transition hover:text-slate-900"
+              >
+                Locais
+              </Link>
+              <Link
                 href="/dashboard/perfil"
                 className="text-slate-600 transition hover:text-slate-900"
               >

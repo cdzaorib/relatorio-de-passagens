@@ -101,6 +101,34 @@ reajuste nenhum.
 
 O campo de valor aceita `4,70`, `R$ 4,70`, `4.70` ou `1.234,56`.
 
+## Lançamento de trechos
+
+Em `/dashboard/trips`, dois caminhos:
+
+**Por local** — escolha o local e a data. A ida sai inteira e, com a caixa da
+volta marcada, os trechos espelhados vêm junto. Um local de dois ônibus lança
+quatro linhas de uma vez. O valor usado é sempre o do preço vigente, não o
+guardado no cadastro do local.
+
+**Na mão** — para o dia fora do comum. Escolher uma passagem cadastrada
+preenche transporte, cartão, valor e chuta a linha a partir do nome
+(`Ônibus 323` → `323`), tudo editável. A caixa *"Voltou para o mesmo local de
+início?"* vem marcada e lança o espelho junto.
+
+A tabela abaixo mostra os últimos 30 dias agrupados por dia, com total do dia,
+edição no lugar, exclusão de um trecho e exclusão do dia inteiro. Bairros e
+clientes têm autocomplete do que você já usou, pelo `datalist` do próprio
+navegador — sem biblioteca e funcionando no celular.
+
+### Locais
+
+Em `/dashboard/locais` você cadastra **só a ida**, trecho por trecho, na ordem
+em que pega cada condução. A volta nunca é cadastrada: ela é derivada na hora
+do lançamento invertendo a ordem, trocando origem com destino e pondo
+`Residência` no cliente. A regra vive em `src/lib/trips.ts`, isolada da tela.
+
+Excluir um local não mexe em nada que já foi lançado.
+
 ## Estrutura
 
 ```
@@ -108,12 +136,17 @@ src/
   app/                 rotas (App Router)
   components/
     auth/              formulários de login, cadastro e senha
+    locais/            cadastro dos locais e seus trechos de ida
     perfil/            dados do cabeçalho e CRUD de passagens
+    trips/             lançamento, atalho por local e tabela editável
     ui/                campo, seleção, alerta e botão de envio
   lib/
     env.ts             leitura das variáveis de ambiente
     form-state.ts      estado devolvido pelas actions de formulário
     format.ts          valores em reais e datas em pt-BR
+    fares.ts           passagem escolhida preenchendo o trecho
+    suggestions.ts     autocomplete de bairros e clientes
+    trips.ts           espelho da volta e montagem dos trechos
     rate-limit.ts      trava de repetição no envio de e-mail
     resend.ts          e-mail de redefinição de senha
     validation.ts      validações e tradução dos erros do Supabase
@@ -168,7 +201,7 @@ Detalhes que valem lembrar:
 - [x] **F1** Setup: projeto, Supabase clients, tipos, schema SQL + RLS
 - [x] **F2** Auth: login, cadastro, recuperação de senha, middleware
 - [x] **F3** Perfil: nome, superior e CRUD de preços com histórico
-- [ ] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
+- [x] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
       (cadastrar e aplicar em uma data), tabela editável
 - [ ] **F5** Filtro de período e cards de resumo
 - [ ] **F6** Geração do PDF no formato do relatório

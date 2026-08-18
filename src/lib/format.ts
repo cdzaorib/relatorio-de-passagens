@@ -52,3 +52,18 @@ export function formatDate(value: string): string {
 
   return DATE.format(date)
 }
+
+/**
+ * Data de hoje no fuso do Rio, em ISO (yyyy-mm-dd).
+ * Fixar o fuso evita o servidor em UTC achar que já é amanhã depois das 21h.
+ */
+export function todayISO(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+}
+
+/** Data de N dias atrás, no mesmo formato. */
+export function daysAgoISO(days: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() - days)
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(date)
+}
