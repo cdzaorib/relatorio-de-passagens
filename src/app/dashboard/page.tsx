@@ -1,58 +1,68 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
+import { PeriodFilter } from '@/components/dashboard/PeriodFilter'
+import { ReportPreview } from '@/components/dashboard/ReportPreview'
+import { SummaryCards } from '@/components/dashboard/SummaryCards'
+import { todayISO } from '@/lib/format'
+import { parsePeriod } from '@/lib/period'
+import { summarize } from '@/lib/report'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Início' }
 
-export default async function DashboardPage() {
+type PageProps = {
+  searchParams: Promise<{ de?: string; ate?: string }>
+}
+
+export default async function DashboardPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const today = todayISO()
+  const period = parsePeriod(params, today)
+
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('name, supervisor_name')
-    .eq('id', user!.id)
-    .maybeSingle()
+  const [profileResult, tripsResult] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', user!.id).maybeSingle(),
+    supabase
+      .from('trips')
+      .select('*')
+      .gte('date', period.from)
+      .lte('date', period.to)
+      .order('date', { ascending: true })
+      .order('created_at', { ascending: true }),
+  ])
 
-  const firstName = profile?.name?.split(' ')[0]
+  const profile = profileResult.data
+  const trips = tripsResult.data ?? []
+  const totals = summarize(trips)
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">
-          {firstName ? `Olá, ${firstName}` : 'Olá'}
-        </h1>
-        <p className="text-slate-600">Sua conta está pronta.</p>
+    <div className="space-y-8">
+      <div className="no-print flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-bold text-slate-900">Relatório</h1>
+          <p className="text-slate-600">
+            Escolha o período e confira antes de gerar o PDF.
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/trips"
+          className="rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700"
+        >
+          Lançar trechos
+        </Link>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Cabeçalho do relatório</h2>
-        <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm text-slate-500">Funcionário</dt>
-            <dd className="mt-0.5 font-medium text-slate-900">
-              {profile?.name || <span className="text-slate-400">não preenchido</span>}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-slate-500">Superior imediato</dt>
-            <dd className="mt-0.5 font-medium text-slate-900">
-              {profile?.supervisor_name || <span className="text-slate-400">não preenchido</span>}
-            </dd>
-          </div>
-        </dl>
-      </section>
+      <PeriodFilter period={period} today={today} />
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Próximos passos</h2>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          O lançamento de trechos, os locais salvos, o resumo do período e a
-          geração do PDF entram nas próximas etapas. Por enquanto, o que existe
-          aqui é a sua conta e o cabeçalho acima.
-        </p>
-      </section>
+      <SummaryCards totals={totals} />
+
+      <ReportPreview profile={profile} period={period} trips={trips} totals={totals} />
     </div>
   )
 }

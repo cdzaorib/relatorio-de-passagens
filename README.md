@@ -129,6 +129,26 @@ do lançamento invertendo a ordem, trocando origem com destino e pondo
 
 Excluir um local não mexe em nada que já foi lançado.
 
+## Período e resumo
+
+O `/dashboard` é a tela do relatório. O período fica na URL
+(`?de=2026-07-01&ate=2026-07-15`), então dá para guardar nos favoritos o link
+do fechamento de um mês específico. O filtro é um `<form method="get">`
+comum — funciona sem JavaScript.
+
+O padrão é a quinzena em que hoje cai: dia 1 ao 15, ou 16 até o fim do mês.
+Há atalhos para as duas quinzenas e para o mês inteiro. Datas invertidas são
+endireitadas; datas incompletas ou inválidas caem no padrão em vez de montar
+um intervalo que ninguém pediu.
+
+Acima da tabela ficam os quatro números do rodapé — total RIO CARD, total
+JAÉ, total geral e quantidade de trechos — e logo abaixo a prévia do
+relatório, já com as colunas, a ordem e o rodapé do formato final. É essa
+prévia que a F6 vira PDF.
+
+Somas de centavos em ponto flutuante acumulam sujeira (`211.09999999999994`),
+então o total é arredondado no fim, em `src/lib/report.ts`.
+
 ## Estrutura
 
 ```
@@ -136,6 +156,7 @@ src/
   app/                 rotas (App Router)
   components/
     auth/              formulários de login, cadastro e senha
+    dashboard/         filtro de período, cards e prévia do relatório
     locais/            cadastro dos locais e seus trechos de ida
     perfil/            dados do cabeçalho e CRUD de passagens
     trips/             lançamento, atalho por local e tabela editável
@@ -146,6 +167,8 @@ src/
     format.ts          valores em reais e datas em pt-BR
     fares.ts           passagem escolhida preenchendo o trecho
     suggestions.ts     autocomplete de bairros e clientes
+    period.ts          período do relatório, quinzenas e leitura da URL
+    report.ts          totais por cartão, trechos e dias
     trips.ts           espelho da volta e montagem dos trechos
     rate-limit.ts      trava de repetição no envio de e-mail
     resend.ts          e-mail de redefinição de senha
@@ -203,6 +226,6 @@ Detalhes que valem lembrar:
 - [x] **F3** Perfil: nome, superior e CRUD de preços com histórico
 - [x] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
       (cadastrar e aplicar em uma data), tabela editável
-- [ ] **F5** Filtro de período e cards de resumo
+- [x] **F5** Filtro de período e cards de resumo
 - [ ] **F6** Geração do PDF no formato do relatório
 - [ ] **F7** Polish: validações, estados de carregamento, mobile, deploy
