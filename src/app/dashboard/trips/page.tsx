@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { PlaceLauncher } from '@/components/trips/PlaceLauncher'
 import { TripForm } from '@/components/trips/TripForm'
 import { TripsTable } from '@/components/trips/TripsTable'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { daysAgoISO, todayISO } from '@/lib/format'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
@@ -53,18 +54,22 @@ export default async function TripsPage() {
       </div>
 
       {placesWithLegs.length > 0 ? (
-        <section className="rounded-xl border border-brand-100 bg-brand-50/40 p-6">
-          <h2 className="font-semibold text-slate-900">Lançar por local</h2>
-          <p className="mt-1 mb-5 text-sm text-slate-600">
-            O jeito rápido: escolha para onde você foi e a data, e o dia inteiro
-            entra de uma vez.
-          </p>
+        <Card tone="accent">
+          <CardHeader>
+            <CardTitle>Lançar por local</CardTitle>
+            <CardDescription>
+              O jeito rápido: escolha para onde você foi e a data, e o dia
+              inteiro entra de uma vez.
+            </CardDescription>
+          </CardHeader>
           <PlaceLauncher places={placesWithLegs} today={today} />
-        </section>
+        </Card>
       ) : (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="font-semibold text-slate-900">Lançar por local</h2>
-          <p className="mt-1 text-sm text-slate-600">
+        <Card>
+          <CardHeader>
+            <CardTitle>Lançar por local</CardTitle>
+          </CardHeader>
+          <p className="text-sm text-slate-600">
             Se você repete o mesmo caminho toda semana, cadastre um local uma vez
             e depois lance o dia com dois cliques.{' '}
             <Link
@@ -75,17 +80,19 @@ export default async function TripsPage() {
             </Link>
             .
           </p>
-        </section>
+        </Card>
       )}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Lançar trecho</h2>
-        <p className="mt-1 mb-5 text-sm text-slate-600">
-          Para o dia fora do comum. Se você voltou para o mesmo lugar de onde
-          saiu, deixe a caixa marcada e a volta é lançada junto.
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Lançar trecho</CardTitle>
+          <CardDescription>
+            Para o dia fora do comum. Se você voltou para o mesmo lugar de onde
+            saiu, deixe a caixa marcada e a volta é lançada junto.
+          </CardDescription>
+        </CardHeader>
         <TripForm fares={fares} suggestions={suggestions} today={today} />
-      </section>
+      </Card>
 
       <section className="space-y-4">
         <div>

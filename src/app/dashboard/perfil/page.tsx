@@ -4,6 +4,7 @@ import { FarePriceForm } from '@/components/perfil/FarePriceForm'
 import { FarePriceHistory } from '@/components/perfil/FarePriceHistory'
 import { FarePriceList } from '@/components/perfil/FarePriceList'
 import { ProfileForm } from '@/components/perfil/ProfileForm'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Perfil' }
@@ -43,33 +44,36 @@ export default async function PerfilPage() {
         </p>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Dados do relatório</h2>
-        <p className="mt-1 mb-5 text-sm text-slate-600">
-          É o que aparece no cabeçalho de todo relatório gerado.
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Dados do relatório</CardTitle>
+          <CardDescription>É o que aparece no cabeçalho de todo relatório gerado.</CardDescription>
+        </CardHeader>
         <ProfileForm profile={profile} />
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Passagens</h2>
-        <p className="mt-1 mb-5 text-sm text-slate-600">
-          Cadastre o valor uma vez e reaproveite em cada lançamento. Quando
-          houver reajuste, use <strong>Editar</strong>: o valor antigo vai para o
-          histórico em vez de sumir.
-        </p>
-
+      <Card>
+        <CardHeader>
+          <CardTitle>Passagens</CardTitle>
+          <CardDescription>
+            Cadastre o valor uma vez e reaproveite em cada lançamento. Quando
+            houver reajuste, use <strong>Editar</strong>: o valor antigo vai para
+            o histórico em vez de sumir.
+          </CardDescription>
+        </CardHeader>
         <FarePriceList farePrices={activeFares} />
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Nova passagem</h2>
-        <p className="mt-1 mb-5 text-sm text-slate-600">
-          Ônibus costuma ser pago no JAÉ e barca no RIO CARD — o cartão vem
-          sugerido, mas você troca quando for o caso.
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Nova passagem</CardTitle>
+          <CardDescription>
+            Ônibus costuma ser pago no JAÉ e barca no RIO CARD — o cartão vem
+            sugerido, mas você troca quando for o caso.
+          </CardDescription>
+        </CardHeader>
         <FarePriceForm />
-      </section>
+      </Card>
 
       <FarePriceHistory farePrices={history} />
     </div>

@@ -137,6 +137,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
           onChange={(event) => setName(event.target.value)}
           placeholder="HCNI"
           hint="Vira o cliente dos trechos de ida no relatório."
+          error={state.fieldErrors?.name}
         />
       </div>
 
@@ -253,11 +254,9 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <div className="sm:w-48">
-          <SubmitButton pendingLabel="Salvando...">
-            {isEditing ? 'Salvar alterações' : 'Cadastrar local'}
-          </SubmitButton>
-        </div>
+        <SubmitButton pendingLabel="Salvando...">
+          {isEditing ? 'Salvar alterações' : 'Cadastrar local'}
+        </SubmitButton>
 
         {onCancel ? (
           <button

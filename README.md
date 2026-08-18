@@ -149,11 +149,27 @@ padrão em vez de montar um intervalo que ninguém pediu.
 
 Acima da tabela ficam os quatro números do rodapé — total RIO CARD, total
 JAÉ, total geral e quantidade de trechos — e logo abaixo a prévia do
-relatório, já com as colunas, a ordem e o rodapé do formato final. É essa
-prévia que a F6 vira PDF.
+relatório, no formato final. É essa prévia que a F6 vira PDF.
+
+A tabela tem **uma coluna de valor**, com o cartão dito em cada linha por uma
+etiqueta. A planilha antiga usava duas colunas, uma por cartão, com uma delas
+sempre vazia; o que importa é ficar claro qual cartão pagou, e os totais
+separados por cartão continuam no rodapé, que é o que o financeiro usa.
 
 Somas de centavos em ponto flutuante acumulam sujeira (`211.09999999999994`),
 então o total é arredondado no fim, em `src/lib/report.ts`.
+
+## Formulários
+
+Toda validação acontece no servidor e volta **campo a campo**: o input erra
+com `aria-invalid`, a mensagem aparece embaixo dele e todos os problemas vêm
+de uma vez, em vez de um por envio. Erros que não pertencem a um campo —
+falha de gravação, sessão expirada — continuam num aviso no topo.
+
+Os componentes de `src/components/ui` são escritos só com Tailwind, sem
+biblioteca de UI: `TextField` e `SelectField` cuidam de rótulo, dica, erro e
+autocomplete; `SubmitButton` desabilita e mostra progresso pelo `useFormStatus`
+com um SVG próprio; `Card` agrupa o conteúdo das páginas.
 
 ## Estrutura
 
@@ -166,7 +182,7 @@ src/
     locais/            cadastro dos locais e seus trechos de ida
     perfil/            dados do cabeçalho e CRUD de passagens
     trips/             lançamento, atalho por local e tabela editável
-    ui/                campo, seleção, alerta e botão de envio
+    ui/                campo, seleção, alerta, cartão e botão de envio
   lib/
     env.ts             leitura das variáveis de ambiente
     form-state.ts      estado devolvido pelas actions de formulário

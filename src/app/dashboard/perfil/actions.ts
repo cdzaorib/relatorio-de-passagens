@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { parseAmount } from '@/lib/format'
-import type { FormState } from '@/lib/form-state'
+import type { FieldErrors, FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeText } from '@/lib/validation'
 import { isCardType, isTransportType } from '@/types'
@@ -16,21 +16,32 @@ type FarePriceFields = {
   value: number
 }
 
-function readFarePriceFields(formData: FormData): FarePriceFields | string {
+function readFarePriceFields(formData: FormData): FarePriceFields | FieldErrors {
   const label = normalizeText(formData.get('label'))
   const transport = String(formData.get('transport') ?? '')
   const card = String(formData.get('card') ?? '')
-  const rawValue = String(formData.get('value') ?? '')
+  const value = parseAmount(String(formData.get('value') ?? ''))
 
-  if (!label) return 'Dê um nome para a passagem (ex: Ônibus 323).'
-  if (!isTransportType(transport)) return 'Escolha o meio de transporte.'
-  if (!isCardType(card)) return 'Escolha o cartão.'
+  const errors: FieldErrors = {}
 
-  const value = parseAmount(rawValue)
-  if (value === null) return 'Valor inválido. Escreva assim: 4,70.'
-  if (value === 0) return 'O valor precisa ser maior que zero.'
+  if (!label) errors.label = 'Dê um nome para a passagem (ex: Ônibus 323).'
+  if (!isTransportType(transport)) errors.transport = 'Escolha o meio de transporte.'
+  if (!isCardType(card)) errors.card = 'Escolha o cartão.'
+  if (value === null) errors.value = 'Valor inválido. Escreva assim: 4,70.'
+  else if (value === 0) errors.value = 'O valor precisa ser maior que zero.'
 
-  return { label, transport, card, value }
+  if (Object.keys(errors).length > 0) return errors
+
+  return {
+    label,
+    transport: transport as FarePriceFields['transport'],
+    card: card as FarePriceFields['card'],
+    value: value as number,
+  }
+}
+
+function isFieldErrors(result: FarePriceFields | FieldErrors): result is FieldErrors {
+  return !('label' in result)
 }
 
 // ---------------------------------------------------------------------------
@@ -42,8 +53,10 @@ export async function updateProfile(_prevState: FormState, formData: FormData): 
   const supervisorName = normalizeText(formData.get('supervisor_name'))
   const values = { name, supervisor_name: supervisorName }
 
-  if (!name) return { error: 'Informe seu nome completo.', values }
-  if (!supervisorName) return { error: 'Informe o nome do superior imediato.', values }
+  const errors: FieldErrors = {}
+  if (!name) errors.name = 'Informe seu nome completo.'
+  if (!supervisorName) errors.supervisor_name = 'Informe o nome do superior imediato.'
+  if (Object.keys(errors).length > 0) return { fieldErrors: errors, values }
 
   const supabase = await createClient()
   const {
@@ -74,7 +87,7 @@ export async function createFarePrice(
   formData: FormData,
 ): Promise<FormState> {
   const fields = readFarePriceFields(formData)
-  if (typeof fields === 'string') return { error: fields }
+  if (isFieldErrors(fields)) return { fieldErrors: fields }
 
   const supabase = await createClient()
   const {
@@ -107,7 +120,7 @@ export async function updateFarePrice(
   if (!id) return { error: 'Passagem não encontrada.' }
 
   const fields = readFarePriceFields(formData)
-  if (typeof fields === 'string') return { error: fields }
+  if (isFieldErrors(fields)) return { fieldErrors: fields }
 
   const supabase = await createClient()
   const {

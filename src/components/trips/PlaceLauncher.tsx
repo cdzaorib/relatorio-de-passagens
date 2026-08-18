@@ -24,7 +24,7 @@ export function PlaceLauncher({ places, today }: { places: PlaceWithLegs[]; toda
   const totalLegs = includeReturn ? legCount * 2 : legCount
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-5">
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
       {state.success ? <Alert variant="success">{state.success}</Alert> : null}
 
@@ -35,9 +35,17 @@ export function PlaceLauncher({ places, today }: { places: PlaceWithLegs[]; toda
           value={placeId}
           onChange={(event) => setPlaceId(event.target.value)}
           options={places.map((place) => ({ value: place.id, label: place.name }))}
+          error={state.fieldErrors?.place_id}
         />
 
-        <TextField label="Data" name="date" type="date" required defaultValue={today} />
+        <TextField
+          label="Data"
+          name="date"
+          type="date"
+          required
+          defaultValue={today}
+          error={state.fieldErrors?.date}
+        />
       </div>
 
       <label className="flex items-center gap-3">
@@ -75,7 +83,7 @@ export function PlaceLauncher({ places, today }: { places: PlaceWithLegs[]; toda
         </div>
       ) : null}
 
-      <div className="sm:w-48">
+      <div>
         <SubmitButton pendingLabel="Lançando...">Lançar dia</SubmitButton>
       </div>
     </form>

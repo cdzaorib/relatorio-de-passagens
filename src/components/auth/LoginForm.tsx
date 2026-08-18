@@ -12,7 +12,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const [state, formAction] = useActionState(login, EMPTY_FORM_STATE)
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="redirect" value={redirectTo} />
 
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
@@ -35,7 +35,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
         required
       />
 
-      <SubmitButton pendingLabel="Entrando...">Entrar</SubmitButton>
+      <SubmitButton className="w-full" pendingLabel="Entrando...">Entrar</SubmitButton>
     </form>
   )
 }

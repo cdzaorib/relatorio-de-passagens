@@ -39,14 +39,7 @@ type TripFormProps = {
   onCancel?: () => void
 }
 
-export function TripForm({
-  fares,
-  suggestions,
-  today,
-  trip,
-  onDone,
-  onCancel,
-}: TripFormProps) {
+export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: TripFormProps) {
   const isEditing = Boolean(trip)
   const [state, formAction] = useActionState(
     isEditing ? updateTrip : createTrip,
@@ -62,6 +55,8 @@ export function TripForm({
   const [line, setLine] = useState(trip?.line ?? '')
   const [value, setValue] = useState(trip ? formatAmountInput(Number(trip.value)) : '')
   const [fareId, setFareId] = useState('')
+
+  const fieldError = (field: string) => state.fieldErrors?.[field]
 
   /** Escolher uma passagem cadastrada preenche transporte, cartão e valor. */
   function handleFareChange(nextFareId: string) {
@@ -102,7 +97,7 @@ export function TripForm({
   }, [state, isEditing, onDone])
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-6">
       {trip ? <input type="hidden" name="id" value={trip.id} /> : null}
 
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
@@ -116,6 +111,7 @@ export function TripForm({
           required
           value={date}
           onChange={(event) => setDate(event.target.value)}
+          error={fieldError('date')}
         />
 
         <TextField
@@ -125,6 +121,7 @@ export function TripForm({
           defaultValue={trip?.origin ?? ''}
           suggestions={suggestions.neighborhoods}
           placeholder="Bananal"
+          error={fieldError('origin')}
         />
 
         <TextField
@@ -134,6 +131,7 @@ export function TripForm({
           defaultValue={trip?.destination ?? ''}
           suggestions={suggestions.neighborhoods}
           placeholder="Cocotá"
+          error={fieldError('destination')}
         />
 
         <TextField
@@ -143,6 +141,7 @@ export function TripForm({
           defaultValue={trip?.client ?? ''}
           suggestions={suggestions.clients}
           placeholder="Tecnoarte"
+          error={fieldError('client')}
         />
 
         {fares.length > 0 ? (
@@ -165,6 +164,7 @@ export function TripForm({
           options={TRANSPORT_SELECT}
           value={transport}
           onChange={(event) => handleTransportChange(event.target.value as TransportType)}
+          error={fieldError('transport')}
         />
 
         <TextField
@@ -177,11 +177,13 @@ export function TripForm({
         />
 
         <SelectField
-          label="Cartão"
+          label="Cartão usado"
           name="card"
           options={CARD_SELECT}
           value={card}
           onChange={(event) => setCard(event.target.value as CardType)}
+          hint="Sugerido pelo transporte, mas dá para trocar."
+          error={fieldError('card')}
         />
 
         <TextField
@@ -192,6 +194,7 @@ export function TripForm({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="4,70"
+          error={fieldError('value')}
         />
       </div>
 
@@ -215,11 +218,9 @@ export function TripForm({
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <div className="sm:w-48">
-          <SubmitButton pendingLabel="Salvando...">
-            {isEditing ? 'Salvar alteração' : 'Lançar trecho'}
-          </SubmitButton>
-        </div>
+        <SubmitButton pendingLabel="Salvando...">
+          {isEditing ? 'Salvar alteração' : 'Lançar trecho'}
+        </SubmitButton>
 
         {onCancel ? (
           <button

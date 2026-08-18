@@ -84,7 +84,7 @@ async function requireUser() {
 
 export async function createPlace(_prevState: FormState, formData: FormData): Promise<FormState> {
   const name = normalizeText(formData.get('name'))
-  if (!name) return { error: 'Dê um nome ao local (ex: HCNI).' }
+  if (!name) return { fieldErrors: { name: 'Dê um nome ao local (ex: HCNI).' } }
 
   const legs = parseLegs(String(formData.get('legs') ?? ''))
   if (typeof legs === 'string') return { error: legs }
@@ -100,11 +100,9 @@ export async function createPlace(_prevState: FormState, formData: FormData): Pr
 
   if (placeError || !place) {
     const duplicated = placeError?.code === '23505'
-    return {
-      error: duplicated
-        ? `Você já tem um local chamado ${name}.`
-        : 'Não foi possível salvar o local. Tente de novo.',
-    }
+    return duplicated
+      ? { fieldErrors: { name: `Você já tem um local chamado ${name}.` } }
+      : { error: 'Não foi possível salvar o local. Tente de novo.' }
   }
 
   const { error: legsError } = await supabase
@@ -127,7 +125,7 @@ export async function updatePlace(_prevState: FormState, formData: FormData): Pr
   const name = normalizeText(formData.get('name'))
 
   if (!id) return { error: 'Local não encontrado.' }
-  if (!name) return { error: 'Dê um nome ao local.' }
+  if (!name) return { fieldErrors: { name: 'Dê um nome ao local.' } }
 
   const legs = parseLegs(String(formData.get('legs') ?? ''))
   if (typeof legs === 'string') return { error: legs }
@@ -139,11 +137,9 @@ export async function updatePlace(_prevState: FormState, formData: FormData): Pr
 
   if (nameError) {
     const duplicated = nameError.code === '23505'
-    return {
-      error: duplicated
-        ? `Você já tem um local chamado ${name}.`
-        : 'Não foi possível salvar o local.',
-    }
+    return duplicated
+      ? { fieldErrors: { name: `Você já tem um local chamado ${name}.` } }
+      : { error: 'Não foi possível salvar o local.' }
   }
 
   // Trocar os trechos por inteiro é mais simples e seguro do que casar um a um

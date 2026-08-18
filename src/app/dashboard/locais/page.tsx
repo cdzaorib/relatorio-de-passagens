@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { PlaceForm } from '@/components/locais/PlaceForm'
 import { PlaceList } from '@/components/locais/PlaceList'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
 import type { PlaceWithLegs } from '@/types'
@@ -36,19 +37,23 @@ export default async function LocaisPage() {
         </p>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="mb-5 font-semibold text-slate-900">Seus locais</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle>Seus locais</CardTitle>
+        </CardHeader>
         <PlaceList places={places} fares={fares} suggestions={suggestions} />
-      </section>
+      </Card>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="font-semibold text-slate-900">Novo local</h2>
-        <p className="mt-1 mb-5 text-sm text-slate-600">
-          Cadastre só a ida. Se você pega dois ônibus, são dois trechos — a
-          volta o app monta sozinho, na ordem inversa.
-        </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Novo local</CardTitle>
+          <CardDescription>
+            Cadastre só a ida. Se você pega dois ônibus, são dois trechos — a
+            volta o app monta sozinho, na ordem inversa.
+          </CardDescription>
+        </CardHeader>
         <PlaceForm fares={fares} suggestions={suggestions} />
-      </section>
+      </Card>
     </div>
   )
 }

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { parseAmount } from '@/lib/format'
-import type { FormState } from '@/lib/form-state'
+import type { FieldErrors, FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
 import { buildDayLegs, legsToTrips, mirrorLegs, type LegDraft } from '@/lib/trips'
 import { normalizeText } from '@/lib/validation'
@@ -13,8 +13,12 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 type TripFields = LegDraft & { date: string }
 
-/** Lê e valida os campos do formulário de trecho. */
-function readTripFields(formData: FormData): TripFields | string {
+/**
+ * Lê e valida os campos do formulário de trecho.
+ * Junta todos os problemas de uma vez: corrigir um campo por envio, como era
+ * antes, é irritante em formulário deste tamanho.
+ */
+function readTripFields(formData: FormData): TripFields | FieldErrors {
   const date = String(formData.get('date') ?? '')
   const origin = normalizeText(formData.get('origin'))
   const destination = normalizeText(formData.get('destination'))
@@ -22,20 +26,36 @@ function readTripFields(formData: FormData): TripFields | string {
   const transport = String(formData.get('transport') ?? '')
   const card = String(formData.get('card') ?? '')
   const line = normalizeText(formData.get('line'))
-  const rawValue = String(formData.get('value') ?? '')
+  const value = parseAmount(String(formData.get('value') ?? ''))
 
-  if (!DATE_PATTERN.test(date)) return 'Escolha a data do trecho.'
-  if (!origin) return 'Informe o bairro de origem.'
-  if (!destination) return 'Informe o bairro de destino.'
-  if (!client) return 'Informe o cliente, a empresa ou "Residência".'
-  if (!isTransportType(transport)) return 'Escolha o meio de transporte.'
-  if (!isCardType(card)) return 'Escolha o cartão.'
+  const errors: FieldErrors = {}
 
-  const value = parseAmount(rawValue)
-  if (value === null) return 'Valor inválido. Escreva assim: 4,70.'
-  if (value === 0) return 'O valor precisa ser maior que zero.'
+  if (!DATE_PATTERN.test(date)) errors.date = 'Escolha a data do trecho.'
+  if (!origin) errors.origin = 'Informe o bairro de origem.'
+  if (!destination) errors.destination = 'Informe o bairro de destino.'
+  if (!client) errors.client = 'Informe o cliente, a empresa ou "Residência".'
+  if (!isTransportType(transport)) errors.transport = 'Escolha o meio de transporte.'
+  if (!isCardType(card)) errors.card = 'Escolha o cartão.'
+  if (value === null) errors.value = 'Valor inválido. Escreva assim: 4,70.'
+  else if (value === 0) errors.value = 'O valor precisa ser maior que zero.'
 
-  return { date, origin, destination, client, transport, card, line: line || null, value }
+  if (Object.keys(errors).length > 0) return errors
+
+  return {
+    date,
+    origin,
+    destination,
+    client,
+    transport: transport as TripFields['transport'],
+    card: card as TripFields['card'],
+    line: line || null,
+    value: value as number,
+  }
+}
+
+/** Distingue o retorno de erro do retorno com os campos prontos. */
+function isFieldErrors(result: TripFields | FieldErrors): result is FieldErrors {
+  return !('date' in result)
 }
 
 async function requireUser() {
@@ -52,7 +72,7 @@ async function requireUser() {
 
 export async function createTrip(_prevState: FormState, formData: FormData): Promise<FormState> {
   const fields = readTripFields(formData)
-  if (typeof fields === 'string') return { error: fields }
+  if (isFieldErrors(fields)) return { fieldErrors: fields }
 
   const includeReturn = formData.get('round_trip') === 'on'
   const { supabase, user } = await requireUser()
@@ -86,7 +106,7 @@ export async function updateTrip(_prevState: FormState, formData: FormData): Pro
   if (!id) return { error: 'Trecho não encontrado.' }
 
   const fields = readTripFields(formData)
-  if (typeof fields === 'string') return { error: fields }
+  if (isFieldErrors(fields)) return { fieldErrors: fields }
 
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
@@ -136,8 +156,8 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
   const date = String(formData.get('date') ?? '')
   const includeReturn = formData.get('round_trip') === 'on'
 
-  if (!placeId) return { error: 'Escolha um local.' }
-  if (!DATE_PATTERN.test(date)) return { error: 'Escolha a data.' }
+  if (!placeId) return { fieldErrors: { place_id: 'Escolha um local.' } }
+  if (!DATE_PATTERN.test(date)) return { fieldErrors: { date: 'Escolha a data.' } }
 
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }

@@ -12,8 +12,10 @@ import type { Profile } from '@/types'
 export function ProfileForm({ profile }: { profile: Profile | null }) {
   const [state, formAction] = useActionState(updateProfile, EMPTY_FORM_STATE)
 
+  const fieldError = (field: string) => state.fieldErrors?.[field]
+
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-5">
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
       {state.success ? <Alert variant="success">{state.success}</Alert> : null}
 
@@ -24,16 +26,18 @@ export function ProfileForm({ profile }: { profile: Profile | null }) {
           autoComplete="name"
           required
           defaultValue={state.values?.name ?? profile?.name ?? ''}
+          error={fieldError('name')}
         />
         <TextField
           label="Superior imediato"
           name="supervisor_name"
           required
           defaultValue={state.values?.supervisor_name ?? profile?.supervisor_name ?? ''}
+          error={fieldError('supervisor_name')}
         />
       </div>
 
-      <div className="sm:w-48">
+      <div>
         <SubmitButton pendingLabel="Salvando...">Salvar</SubmitButton>
       </div>
     </form>

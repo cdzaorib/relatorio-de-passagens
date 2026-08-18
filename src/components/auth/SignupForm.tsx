@@ -18,7 +18,7 @@ export function SignupForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-4">
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
 
       <TextField
@@ -67,7 +67,7 @@ export function SignupForm() {
         minLength={MIN_PASSWORD_LENGTH}
       />
 
-      <SubmitButton pendingLabel="Criando conta...">Criar conta</SubmitButton>
+      <SubmitButton className="w-full" pendingLabel="Criando conta...">Criar conta</SubmitButton>
     </form>
   )
 }

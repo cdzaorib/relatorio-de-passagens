@@ -26,47 +26,43 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen">
       <header className="no-print border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-5">
+        <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            {/* No celular o nome curto cabe; a partir de sm aparece inteiro. */}
             <Link href="/dashboard" className="font-semibold text-slate-900">
-              Reembolso de passagem
+              <span className="sm:hidden">Passagens</span>
+              <span className="hidden sm:inline">Reembolso de passagem</span>
             </Link>
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/dashboard" className="text-slate-600 transition hover:text-slate-900">
-                Início
-              </Link>
-              <Link
-                href="/dashboard/trips"
-                className="text-slate-600 transition hover:text-slate-900"
-              >
-                Trechos
-              </Link>
-              <Link
-                href="/dashboard/locais"
-                className="text-slate-600 transition hover:text-slate-900"
-              >
-                Locais
-              </Link>
-              <Link
-                href="/dashboard/perfil"
-                className="text-slate-600 transition hover:text-slate-900"
-              >
-                Perfil
-              </Link>
-            </nav>
+
+            <div className="flex items-center gap-3">
+              <span className="hidden text-sm text-slate-600 sm:inline">{displayName}</span>
+              <form action={logout}>
+                <button
+                  type="submit"
+                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                >
+                  Sair
+                </button>
+              </form>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-600 sm:inline">{displayName}</span>
-            <form action={logout}>
-              <button
-                type="submit"
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+          <nav className="-mx-1 mt-2 flex items-center gap-1 overflow-x-auto text-sm sm:mt-1">
+            {[
+              { href: '/dashboard', label: 'Início' },
+              { href: '/dashboard/trips', label: 'Trechos' },
+              { href: '/dashboard/locais', label: 'Locais' },
+              { href: '/dashboard/perfil', label: 'Perfil' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-lg px-2 py-1 whitespace-nowrap text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
               >
-                Sair
-              </button>
-            </form>
-          </div>
+                {item.label}
+              </Link>
+            ))}
+          </nav>
         </div>
       </header>
 

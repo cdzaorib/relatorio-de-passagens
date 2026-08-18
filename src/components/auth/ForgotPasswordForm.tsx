@@ -16,7 +16,7 @@ export function ForgotPasswordForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-4">
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
 
       <TextField
@@ -29,7 +29,7 @@ export function ForgotPasswordForm() {
         placeholder="voce@empresa.com"
       />
 
-      <SubmitButton>Enviar link de redefinição</SubmitButton>
+      <SubmitButton className="w-full">Enviar link de redefinição</SubmitButton>
     </form>
   )
 }

@@ -67,8 +67,10 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
     }
   }, [state, isEditing, onDone])
 
+  const fieldError = (field: string) => state.fieldErrors?.[field]
+
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-5">
       {farePrice ? <input type="hidden" name="id" value={farePrice.id} /> : null}
 
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
@@ -82,6 +84,7 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
           defaultValue={farePrice?.label ?? ''}
           placeholder="Ônibus 323"
           hint="Costuma ser a linha, para você reconhecer depois."
+          error={fieldError('label')}
         />
 
         <TextField
@@ -91,6 +94,7 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
           inputMode="decimal"
           defaultValue={farePrice ? formatAmountInput(Number(farePrice.value)) : ''}
           placeholder="4,70"
+          error={fieldError('value')}
         />
 
         <SelectField
@@ -99,6 +103,7 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
           options={TRANSPORT_SELECT}
           value={transport}
           onChange={(event) => handleTransportChange(event.target.value as TransportType)}
+          error={fieldError('transport')}
         />
 
         <SelectField
@@ -108,15 +113,14 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
           value={card}
           onChange={(event) => setCard(event.target.value as CardType)}
           hint="Sugerido pelo transporte, mas dá para trocar."
+          error={fieldError('card')}
         />
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <div className="sm:w-48">
-          <SubmitButton pendingLabel="Salvando...">
-            {isEditing ? 'Salvar alteração' : 'Cadastrar passagem'}
-          </SubmitButton>
-        </div>
+        <SubmitButton pendingLabel="Salvando...">
+          {isEditing ? 'Salvar alteração' : 'Cadastrar passagem'}
+        </SubmitButton>
 
         {onCancel ? (
           <button

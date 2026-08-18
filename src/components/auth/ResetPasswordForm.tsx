@@ -13,7 +13,7 @@ export function ResetPasswordForm() {
   const [state, formAction] = useActionState(updatePassword, EMPTY_FORM_STATE)
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={formAction} className="flex flex-col gap-4">
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
 
       <TextField
@@ -35,7 +35,7 @@ export function ResetPasswordForm() {
         minLength={MIN_PASSWORD_LENGTH}
       />
 
-      <SubmitButton pendingLabel="Salvando...">Salvar nova senha</SubmitButton>
+      <SubmitButton className="w-full" pendingLabel="Salvando...">Salvar nova senha</SubmitButton>
     </form>
   )
 }
