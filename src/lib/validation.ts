@@ -2,6 +2,25 @@
 
 export const MIN_PASSWORD_LENGTH = 8
 
+/**
+ * Tamanho máximo dos campos de texto.
+ * As colunas do banco são `text` sem limite: sem isto, uma colagem acidental
+ * entraria inteira e estouraria a coluna do relatório.
+ */
+export const MAX_LENGTHS = {
+  nome: 120,
+  bairro: 60,
+  cliente: 80,
+  linha: 20,
+  passagem: 60,
+  local: 60,
+} as const
+
+/** Devolve a mensagem se passar do limite, ou null. */
+export function tooLong(valor: string, limite: number, rotulo: string): string | null {
+  return valor.length > limite ? `${rotulo} pode ter no máximo ${limite} caracteres.` : null
+}
+
 export function normalizeEmail(value: FormDataEntryValue | null): string {
   return String(value ?? '')
     .trim()
@@ -33,12 +52,19 @@ export function validatePasswordConfirmation(password: string, confirmation: str
 
 /**
  * Só aceita caminho interno como destino pós-login.
- * Bloqueia '//host' e URL absoluta, que dariam redirect para fora do app.
+ *
+ * Exige uma única barra no início, sem contrabarra e sem caractere de
+ * controle. A contrabarra importa: '/\evil.com' parece caminho interno, mas
+ * o navegador e o parser de URL tratam '\' como '/', então viraria
+ * '//evil.com' e levaria a pessoa para fora do app depois do login — um
+ * convite pronto para phishing. Caractere de controle é barrado para não
+ * abrir espaço a injeção no cabeçalho Location.
  */
+const INTERNAL_PATH = /^\/(?![/\\])[^\x00-\x20\\]*$/
+
 export function safeRedirectPath(value: string | null | undefined, fallback = '/dashboard'): string {
   if (!value) return fallback
-  if (!value.startsWith('/') || value.startsWith('//')) return fallback
-  return value
+  return INTERNAL_PATH.test(value) ? value : fallback
 }
 
 /** Traduz os erros do Supabase Auth, que vêm em inglês. */

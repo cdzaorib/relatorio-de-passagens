@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { parseAmount } from '@/lib/format'
 import type { FieldErrors, FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
-import { normalizeText } from '@/lib/validation'
+import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
 import { isCardType, isTransportType } from '@/types'
 
 /** Dados do formulário de preço, já validados. */
@@ -25,6 +25,10 @@ function readFarePriceFields(formData: FormData): FarePriceFields | FieldErrors 
   const errors: FieldErrors = {}
 
   if (!label) errors.label = 'Dê um nome para a passagem (ex: Ônibus 323).'
+  else {
+    const limite = tooLong(label, MAX_LENGTHS.passagem, 'O nome da passagem')
+    if (limite) errors.label = limite
+  }
   if (!isTransportType(transport)) errors.transport = 'Escolha o meio de transporte.'
   if (!isCardType(card)) errors.card = 'Escolha o cartão.'
   if (value === null) errors.value = 'Valor inválido. Escreva assim: 4,70.'
@@ -54,8 +58,18 @@ export async function updateProfile(_prevState: FormState, formData: FormData): 
   const values = { name, supervisor_name: supervisorName }
 
   const errors: FieldErrors = {}
+
   if (!name) errors.name = 'Informe seu nome completo.'
+  else {
+    const limite = tooLong(name, MAX_LENGTHS.nome, 'O nome')
+    if (limite) errors.name = limite
+  }
+
   if (!supervisorName) errors.supervisor_name = 'Informe o nome do superior imediato.'
+  else {
+    const limite = tooLong(supervisorName, MAX_LENGTHS.nome, 'O nome')
+    if (limite) errors.supervisor_name = limite
+  }
   if (Object.keys(errors).length > 0) return { fieldErrors: errors, values }
 
   const supabase = await createClient()

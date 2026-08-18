@@ -10,6 +10,7 @@ import { TextField } from '@/components/ui/TextField'
 import { fareToLegValues } from '@/lib/fares'
 import { formatAmountInput } from '@/lib/format'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { MAX_LENGTHS } from '@/lib/validation'
 import type { Suggestions } from '@/lib/suggestions'
 import {
   CARD_LABELS,
@@ -136,6 +137,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
           value={name}
           onChange={(event) => setName(event.target.value)}
           placeholder="HCNI"
+          maxLength={MAX_LENGTHS.local}
           hint="Vira o cliente dos trechos de ida no relatório."
           error={state.fieldErrors?.name}
         />
@@ -177,6 +179,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
                 onChange={(event) => updateLeg(index, { origin: event.target.value })}
                 suggestions={suggestions.neighborhoods}
                 placeholder="Bananal"
+                maxLength={MAX_LENGTHS.bairro}
               />
 
               <TextField
@@ -186,6 +189,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
                 onChange={(event) => updateLeg(index, { destination: event.target.value })}
                 suggestions={suggestions.neighborhoods}
                 placeholder="Cocotá"
+                maxLength={MAX_LENGTHS.bairro}
               />
 
               {fares.length > 0 ? (
@@ -222,6 +226,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
                 value={leg.line}
                 onChange={(event) => updateLeg(index, { line: event.target.value })}
                 placeholder="323"
+                maxLength={MAX_LENGTHS.linha}
               />
 
               <SelectField

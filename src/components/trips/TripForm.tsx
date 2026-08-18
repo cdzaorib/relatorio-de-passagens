@@ -10,6 +10,7 @@ import { TextField } from '@/components/ui/TextField'
 import { fareToLegValues } from '@/lib/fares'
 import { formatAmountInput } from '@/lib/format'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { MAX_LENGTHS } from '@/lib/validation'
 import type { Suggestions } from '@/lib/suggestions'
 import {
   CARD_LABELS,
@@ -121,6 +122,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           defaultValue={trip?.origin ?? ''}
           suggestions={suggestions.neighborhoods}
           placeholder="Bananal"
+          maxLength={MAX_LENGTHS.bairro}
           error={fieldError('origin')}
         />
 
@@ -131,6 +133,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           defaultValue={trip?.destination ?? ''}
           suggestions={suggestions.neighborhoods}
           placeholder="Cocotá"
+          maxLength={MAX_LENGTHS.bairro}
           error={fieldError('destination')}
         />
 
@@ -141,6 +144,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           defaultValue={trip?.client ?? ''}
           suggestions={suggestions.clients}
           placeholder="Tecnoarte"
+          maxLength={MAX_LENGTHS.cliente}
           error={fieldError('client')}
         />
 
@@ -173,7 +177,9 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           value={line}
           onChange={(event) => setLine(event.target.value)}
           placeholder="323"
+          maxLength={MAX_LENGTHS.linha}
           hint="Deixe vazio na barca."
+          error={fieldError('line')}
         />
 
         <SelectField

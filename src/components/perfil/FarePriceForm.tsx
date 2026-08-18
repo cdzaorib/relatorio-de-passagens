@@ -9,6 +9,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton'
 import { TextField } from '@/components/ui/TextField'
 import { formatAmountInput } from '@/lib/format'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { MAX_LENGTHS } from '@/lib/validation'
 import {
   CARD_LABELS,
   CARD_OPTIONS,
@@ -83,6 +84,7 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
           required
           defaultValue={farePrice?.label ?? ''}
           placeholder="Ônibus 323"
+          maxLength={MAX_LENGTHS.passagem}
           hint="Costuma ser a linha, para você reconhecer depois."
           error={fieldError('label')}
         />

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { parseAmount } from '@/lib/format'
 import type { FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
-import { normalizeText } from '@/lib/validation'
+import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
 import { isCardType, isTransportType, type PlaceLegInsert } from '@/types'
 
 /** Trecho como o formulário manda (JSON num campo escondido). */
@@ -49,6 +49,12 @@ function parseLegs(raw: string): ParsedLeg[] | string {
 
     if (!origin) return `Trecho ${position}: informe o bairro de origem.`
     if (!destination) return `Trecho ${position}: informe o bairro de destino.`
+
+    const limiteOrigem = tooLong(origin, MAX_LENGTHS.bairro, `Trecho ${position}: o bairro`)
+    if (limiteOrigem) return limiteOrigem
+
+    const limiteDestino = tooLong(destination, MAX_LENGTHS.bairro, `Trecho ${position}: o bairro`)
+    if (limiteDestino) return limiteDestino
     if (!isTransportType(transport)) return `Trecho ${position}: escolha o transporte.`
     if (!isCardType(card)) return `Trecho ${position}: escolha o cartão.`
 
@@ -85,6 +91,9 @@ async function requireUser() {
 export async function createPlace(_prevState: FormState, formData: FormData): Promise<FormState> {
   const name = normalizeText(formData.get('name'))
   if (!name) return { fieldErrors: { name: 'Dê um nome ao local (ex: HCNI).' } }
+
+  const limiteNome = tooLong(name, MAX_LENGTHS.local, 'O nome do local')
+  if (limiteNome) return { fieldErrors: { name: limiteNome } }
 
   const legs = parseLegs(String(formData.get('legs') ?? ''))
   if (typeof legs === 'string') return { error: legs }
@@ -132,6 +141,17 @@ export async function updatePlace(_prevState: FormState, formData: FormData): Pr
 
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
+
+  // Confere a posse antes de mexer. A RLS já impede alterar local alheio, mas
+  // sem esta checagem um id de outra pessoa passaria batido pelo update (zero
+  // linhas, sem erro) e os trechos novos seriam inseridos apontando para lá.
+  const { data: existente } = await supabase
+    .from('places')
+    .select('id')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (!existente) return { error: 'Local não encontrado.' }
 
   const { error: nameError } = await supabase.from('places').update({ name }).eq('id', id)
 

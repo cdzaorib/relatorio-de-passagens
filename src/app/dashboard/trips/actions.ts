@@ -6,7 +6,7 @@ import { parseAmount } from '@/lib/format'
 import type { FieldErrors, FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
 import { buildDayLegs, legsToTrips, mirrorLegs, type LegDraft } from '@/lib/trips'
-import { normalizeText } from '@/lib/validation'
+import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
 import { isCardType, isTransportType } from '@/types'
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -31,9 +31,27 @@ function readTripFields(formData: FormData): TripFields | FieldErrors {
   const errors: FieldErrors = {}
 
   if (!DATE_PATTERN.test(date)) errors.date = 'Escolha a data do trecho.'
+
   if (!origin) errors.origin = 'Informe o bairro de origem.'
+  else {
+    const limite = tooLong(origin, MAX_LENGTHS.bairro, 'O bairro')
+    if (limite) errors.origin = limite
+  }
+
   if (!destination) errors.destination = 'Informe o bairro de destino.'
+  else {
+    const limite = tooLong(destination, MAX_LENGTHS.bairro, 'O bairro')
+    if (limite) errors.destination = limite
+  }
+
   if (!client) errors.client = 'Informe o cliente, a empresa ou "Residência".'
+  else {
+    const limite = tooLong(client, MAX_LENGTHS.cliente, 'O cliente')
+    if (limite) errors.client = limite
+  }
+
+  const limiteLinha = tooLong(line, MAX_LENGTHS.linha, 'A linha')
+  if (limiteLinha) errors.line = limiteLinha
   if (!isTransportType(transport)) errors.transport = 'Escolha o meio de transporte.'
   if (!isCardType(card)) errors.card = 'Escolha o cartão.'
   if (value === null) errors.value = 'Valor inválido. Escreva assim: 4,70.'
