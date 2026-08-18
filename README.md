@@ -19,8 +19,8 @@ npm install
 
 # 2. variáveis de ambiente
 cp .env.example .env.local
-# preencha NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY
-# (Supabase Dashboard > Project Settings > API)
+# preencha com os valores do Supabase Dashboard > Project Settings > API
+# (.env.local é ignorado pelo Git — nenhuma chave entra no repositório)
 
 # 3. banco de dados
 # abra o SQL Editor do Supabase e rode o conteúdo de supabase/schema.sql
@@ -41,16 +41,70 @@ Aplicação em http://localhost:3000.
 | `npm run lint`      | ESLint                                   |
 | `npm run typecheck` | `tsc --noEmit`                           |
 
+## Autenticação
+
+E-mail e senha via Supabase Auth. A sessão vive em cookie, então o servidor lê
+o mesmo login que o browser.
+
+| Rota            | O que faz                                                     |
+| --------------- | ------------------------------------------------------------- |
+| `/auth/login`   | Entrar                                                         |
+| `/auth/signup`  | Criar conta pedindo nome e superior imediato                   |
+| `/auth/forgot`  | Pedir o link de redefinição de senha                           |
+| `/auth/reset`   | Escolher a senha nova                                          |
+| `/auth/confirm` | Troca o token do e-mail por sessão e redireciona               |
+
+O `src/middleware.ts` renova a sessão a cada requisição, manda quem não está
+logado para o login (guardando o destino em `?redirect=`) e tira quem já está
+logado das telas de login e cadastro.
+
+### E-mail de redefinição
+
+Com `RESEND_API_KEY` e a chave secreta do Supabase configuradas, o app gera o
+link de recuperação e envia pelo **Resend**, com remetente e texto próprios.
+
+Sem elas, cai no e-mail padrão do Supabase — funciona igual, só com a
+identidade deles. Nesse caso, ajuste em *Authentication > Email Templates* o
+template **Reset password** para apontar para:
+
+```
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset
+```
+
+E o **Confirm signup** para:
+
+```
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard
+```
+
+### Segredos
+
+Chave nenhuma mora no repositório. `.env.local` está no `.gitignore`; em
+produção, as variáveis vão nos *Environment Variables* da Vercel. A chave
+secreta do Supabase (`SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY`)
+ignora a RLS por completo — ela só é lida em código de servidor e nunca pode
+aparecer em variável `NEXT_PUBLIC_*`.
+
 ## Estrutura
 
 ```
 src/
   app/                 rotas (App Router)
+  components/
+    auth/              formulários de login, cadastro e senha
+    ui/                campo, alerta e botão de envio
   lib/
     env.ts             leitura das variáveis de ambiente
+    form-state.ts      estado devolvido pelas actions de formulário
+    rate-limit.ts      trava de repetição no envio de e-mail
+    resend.ts          e-mail de redefinição de senha
+    validation.ts      validações e tradução dos erros do Supabase
     supabase/
       client.ts        cliente para Client Components
       server.ts        cliente para Server Components / Actions
+      admin.ts         cliente service role (só servidor)
+      middleware.ts    renovação de sessão e controle de acesso
+  middleware.ts        entrada do middleware do Next
   types/
     database.ts        tipos espelhando o schema do Postgres
     index.ts           rótulos e regras de domínio (cartão padrão etc.)
@@ -94,7 +148,7 @@ Detalhes que valem lembrar:
 ## Fases
 
 - [x] **F1** Setup: projeto, Supabase clients, tipos, schema SQL + RLS
-- [ ] **F2** Auth: login, cadastro, recuperação de senha, middleware
+- [x] **F2** Auth: login, cadastro, recuperação de senha, middleware
 - [ ] **F3** Perfil: nome, superior e CRUD de preços com histórico
 - [ ] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
       (cadastrar e aplicar em uma data), tabela editável

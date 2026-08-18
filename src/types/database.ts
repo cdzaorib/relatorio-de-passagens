@@ -34,6 +34,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       fare_prices: {
         Row: {
@@ -72,6 +73,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       trips: {
         Row: {
@@ -116,6 +118,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       places: {
         Row: {
@@ -142,6 +145,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       place_legs: {
         Row: {
@@ -192,15 +196,16 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
     }
-    Views: Record<string, never>
-    Functions: Record<string, never>
+    Views: { [_ in never]: never }
+    Functions: { [_ in never]: never }
     Enums: {
       transport_type: TransportType
       card_type: CardType
     }
-    CompositeTypes: Record<string, never>
+    CompositeTypes: { [_ in never]: never }
   }
 }
 

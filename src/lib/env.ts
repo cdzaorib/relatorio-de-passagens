@@ -17,8 +17,17 @@ export function getSupabaseUrl(): string {
   return required(process.env.NEXT_PUBLIC_SUPABASE_URL, 'NEXT_PUBLIC_SUPABASE_URL')
 }
 
+/**
+ * Chave pública. Aceita os dois nomes porque o Supabase renomeou:
+ * projetos novos entregam uma "publishable key" (sb_publishable_...),
+ * os antigos, uma "anon key" (JWT). As duas funcionam do mesmo jeito.
+ */
 export function getSupabaseAnonKey(): string {
-  return required(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, 'NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  return required(
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY (ou NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)',
+  )
 }
 
 /** URL pública do app, usada para montar links de e-mail. */
