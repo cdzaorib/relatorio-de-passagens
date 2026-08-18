@@ -60,11 +60,17 @@ supabase/
 
 ## Modelo de dados
 
-| Tabela        | Para que serve                                                       |
-| ------------- | -------------------------------------------------------------------- |
-| `profiles`    | Nome do funcionário e do superior imediato (cabeçalho do relatório)  |
-| `fare_prices` | Valores de passagem cadastrados uma vez, com histórico de reajustes  |
-| `trips`       | Um registro por **trecho** (um dia normal tem 4: ida e volta)        |
+| Tabela        | Para que serve                                                        |
+| ------------- | --------------------------------------------------------------------- |
+| `profiles`    | Nome do funcionário e do superior imediato (cabeçalho do relatório)   |
+| `fare_prices` | Valores de passagem cadastrados uma vez, com histórico de reajustes   |
+| `trips`       | Um registro por **trecho** (um dia normal tem 4: ida e volta)         |
+| `places`      | Local de trabalho recorrente (ex: `HCNI`) — o atalho de lançamento    |
+| `place_legs`  | Trechos da **ida** daquele local, em ordem (2 ônibus = 2 registros)    |
+
+**Relatório não é salvo.** Não existe tabela de relatórios: os trechos em
+`trips` são a única fonte, e o PDF é montado na hora a partir do período
+escolhido. O que fica guardado para reaproveitar são os **locais**.
 
 Todas as tabelas têm RLS ligada com `auth.uid()`, então cada usuário só
 enxerga os próprios dados.
@@ -77,13 +83,21 @@ Detalhes que valem lembrar:
   novo registro é criado, preservando o histórico.
 - **`trips.value` é uma cópia.** Um reajuste futuro não altera relatórios já
   fechados.
+- **Local salvo lança o dia inteiro.** Você cadastra o `HCNI` uma vez dizendo
+  que a ida são dois ônibus; no dia, escolhe o local e a data e o app grava os
+  quatro trechos — a volta sai espelhada da ida (ordem invertida, origem e
+  destino trocados, cliente `Residência`).
+- **O valor vem sempre do preço vigente.** `place_legs.fare_group_id` aponta
+  para o grupo em `fare_prices`, então um reajuste já entra nos próximos
+  lançamentos sem precisar reeditar o local.
 
 ## Fases
 
 - [x] **F1** Setup: projeto, Supabase clients, tipos, schema SQL + RLS
 - [ ] **F2** Auth: login, cadastro, recuperação de senha, middleware
 - [ ] **F3** Perfil: nome, superior e CRUD de preços com histórico
-- [ ] **F4** Trips: lançamento, regra do cartão, simular volta, tabela editável
+- [ ] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
+      (cadastrar e aplicar em uma data), tabela editável
 - [ ] **F5** Filtro de período e cards de resumo
 - [ ] **F6** Geração do PDF no formato do relatório
 - [ ] **F7** Polish: validações, estados de carregamento, mobile, deploy

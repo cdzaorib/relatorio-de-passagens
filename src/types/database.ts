@@ -39,6 +39,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
+          group_id: string
           label: string
           transport: TransportType
           card: CardType
@@ -50,6 +51,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
+          group_id?: string
           label: string
           transport: TransportType
           card: CardType
@@ -61,6 +63,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
+          group_id?: string
           label?: string
           transport?: TransportType
           card?: CardType
@@ -114,6 +117,82 @@ export interface Database {
           updated_at?: string
         }
       }
+      places: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      place_legs: {
+        Row: {
+          id: string
+          place_id: string
+          user_id: string
+          position: number
+          origin: string
+          destination: string
+          client: string | null
+          transport: TransportType
+          line: string | null
+          card: CardType
+          fare_group_id: string | null
+          value: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          place_id: string
+          user_id: string
+          position: number
+          origin: string
+          destination: string
+          client?: string | null
+          transport: TransportType
+          line?: string | null
+          card: CardType
+          fare_group_id?: string | null
+          value: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          place_id?: string
+          user_id?: string
+          position?: number
+          origin?: string
+          destination?: string
+          client?: string | null
+          transport?: TransportType
+          line?: string | null
+          card?: CardType
+          fare_group_id?: string | null
+          value?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -137,3 +216,14 @@ export type FarePriceUpdate = Database['public']['Tables']['fare_prices']['Updat
 export type Trip = Database['public']['Tables']['trips']['Row']
 export type TripInsert = Database['public']['Tables']['trips']['Insert']
 export type TripUpdate = Database['public']['Tables']['trips']['Update']
+
+export type Place = Database['public']['Tables']['places']['Row']
+export type PlaceInsert = Database['public']['Tables']['places']['Insert']
+export type PlaceUpdate = Database['public']['Tables']['places']['Update']
+
+export type PlaceLeg = Database['public']['Tables']['place_legs']['Row']
+export type PlaceLegInsert = Database['public']['Tables']['place_legs']['Insert']
+export type PlaceLegUpdate = Database['public']['Tables']['place_legs']['Update']
+
+/** Local com os trechos da ida já carregados, na ordem. */
+export type PlaceWithLegs = Place & { legs: PlaceLeg[] }
