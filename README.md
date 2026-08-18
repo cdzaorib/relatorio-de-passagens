@@ -266,6 +266,22 @@ Detalhes que valem lembrar:
   para o grupo em `fare_prices`, então um reajuste já entra nos próximos
   lançamentos sem precisar reeditar o local.
 
+## Deploy na Vercel
+
+1. Importe o repositório na Vercel (o framework é detectado sozinho).
+2. Em **Settings › Environment Variables**, preencha o que está no
+   `.env.example`. No mínimo `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` e `NEXT_PUBLIC_SITE_URL` com a URL de
+   produção.
+3. Publique de novo. Variável `NEXT_PUBLIC_*` é embutida durante o build, então
+   preencher depois só vale no próximo deploy.
+4. No Supabase, em **Authentication › URL Configuration**, coloque a Site URL
+   de produção e acrescente `https://SEU-APP.vercel.app/auth/confirm` nas
+   Redirect URLs.
+
+Antes das variáveis existirem, o app não quebra: as telas mostram um aviso
+dizendo o que falta preencher.
+
 ## Fases
 
 - [x] **F1** Setup: projeto, Supabase clients, tipos, schema SQL + RLS
@@ -275,4 +291,4 @@ Detalhes que valem lembrar:
       (cadastrar e aplicar em uma data), tabela editável
 - [x] **F5** Filtro de período e cards de resumo
 - [ ] **F6** Geração do PDF no formato do relatório
-- [ ] **F7** Polish: validações, estados de carregamento, mobile, deploy
+- [x] **F7** Polish: validações, estados de carregamento, mobile, deploy

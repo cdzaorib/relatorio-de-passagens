@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/env'
+import { getSupabaseAnonKey, getSupabaseUrl, isSupabaseConfigured } from '@/lib/env'
 import type { Database } from '@/types/database'
 
 /** Rotas que exigem login. */
@@ -26,6 +26,10 @@ function startsWithAny(pathname: string, prefixes: string[]) {
  */
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
+
+  // Sem configuração não há sessão para renovar nem rota a proteger: as
+  // telas mostram o aviso de configuração pendente.
+  if (!isSupabaseConfigured()) return supabaseResponse
 
   const supabase = createServerClient<Database>(getSupabaseUrl(), getSupabaseAnonKey(), {
     cookies: {

@@ -30,6 +30,19 @@ export function getSupabaseAnonKey(): string {
   )
 }
 
+/**
+ * Diz se dá para falar com o Supabase.
+ * Serve para o primeiro deploy, antes de as variáveis serem preenchidas:
+ * melhor uma tela explicando o que falta do que erro 500 em tudo.
+ */
+export function isSupabaseConfigured(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY),
+  )
+}
+
 /** URL pública do app, usada para montar links de e-mail. */
 export function getSiteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'

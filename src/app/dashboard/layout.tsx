@@ -2,9 +2,13 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 import { logout } from '@/app/auth/actions'
+import { SetupPendente } from '@/components/SetupPendente'
+import { isSupabaseConfigured } from '@/lib/env'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  if (!isSupabaseConfigured()) return <SetupPendente />
+
   const supabase = await createClient()
   const {
     data: { user },
