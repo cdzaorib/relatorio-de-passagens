@@ -5,7 +5,8 @@ import { PeriodFilter } from '@/components/dashboard/PeriodFilter'
 import { ReportPreview } from '@/components/dashboard/ReportPreview'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { todayISO } from '@/lib/format'
-import { parsePeriod } from '@/lib/period'
+import { resolvePeriod } from '@/lib/period'
+import { readStoredPeriod } from '@/lib/period-cookie'
 import { summarize } from '@/lib/report'
 import { createClient } from '@/lib/supabase/server'
 
@@ -18,7 +19,8 @@ type PageProps = {
 export default async function DashboardPage({ searchParams }: PageProps) {
   const params = await searchParams
   const today = todayISO()
-  const period = parsePeriod(params, today)
+  // URL primeiro; depois o último período escolhido; por último, a quinzena.
+  const period = resolvePeriod(params, await readStoredPeriod(), today)
 
   const supabase = await createClient()
   const {

@@ -136,10 +136,16 @@ O `/dashboard` é a tela do relatório. O período fica na URL
 do fechamento de um mês específico. O filtro é um `<form method="get">`
 comum — funciona sem JavaScript.
 
-O padrão é a quinzena em que hoje cai: dia 1 ao 15, ou 16 até o fim do mês.
-Há atalhos para as duas quinzenas e para o mês inteiro. Datas invertidas são
-endireitadas; datas incompletas ou inválidas caem no padrão em vez de montar
-um intervalo que ninguém pediu.
+As datas são livres — escolha qualquer início e qualquer fim. O app **lembra
+o último período escolhido** (cookie `periodo`, um ano), porque poucos
+fechamentos caem em quinzena certinha: quem fecha de 20 a 04 não deveria
+reescolher as datas toda vez que abre o app.
+
+A ordem de decisão é: o que está na URL, depois o último período escolhido,
+e só então a quinzena de hoje — que é o ponto de partida de quem nunca
+escolheu nada. Os atalhos das duas quinzenas e do mês inteiro continuam ali.
+Datas invertidas são endireitadas; datas incompletas ou inválidas caem no
+padrão em vez de montar um intervalo que ninguém pediu.
 
 Acima da tabela ficam os quatro números do rodapé — total RIO CARD, total
 JAÉ, total geral e quantidade de trechos — e logo abaixo a prévia do
