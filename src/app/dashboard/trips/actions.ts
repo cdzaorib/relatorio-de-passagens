@@ -152,17 +152,23 @@ export async function updateTrip(_prevState: FormState, formData: FormData): Pro
   return { success: 'Trecho atualizado.' }
 }
 
-export async function deleteTrip(formData: FormData): Promise<void> {
+export async function deleteTrip(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const id = String(formData.get('id') ?? '')
-  if (!id) return
+  if (!id) return { error: 'Trecho não encontrado.' }
 
   const { supabase, user } = await requireUser()
-  if (!user) return
+  if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  await supabase.from('trips').delete().eq('id', id)
+  const { error } = await supabase.from('trips').delete().eq('id', id)
+
+  if (error) return { error: 'Não foi possível excluir. Tente de novo.' }
 
   revalidatePath('/dashboard/trips')
   revalidatePath('/dashboard')
+  return {}
 }
 
 // ---------------------------------------------------------------------------
@@ -245,15 +251,21 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
 }
 
 /** Apaga todos os trechos de um dia de uma vez. */
-export async function deleteTripsOfDay(formData: FormData): Promise<void> {
+export async function deleteTripsOfDay(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const date = String(formData.get('date') ?? '')
-  if (!DATE_PATTERN.test(date)) return
+  if (!DATE_PATTERN.test(date)) return { error: 'Data inválida.' }
 
   const { supabase, user } = await requireUser()
-  if (!user) return
+  if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  await supabase.from('trips').delete().eq('date', date)
+  const { error } = await supabase.from('trips').delete().eq('date', date)
+
+  if (error) return { error: 'Não foi possível excluir o dia. Tente de novo.' }
 
   revalidatePath('/dashboard/trips')
   revalidatePath('/dashboard')
+  return {}
 }

@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Testes
+        run: npm test
+
+      - name: Tipos e lint
+        # O build roda o ESLint e o TypeScript; se algo estiver torto, ele quebra.
+        run: npm run build
+        env:
+          # Valores de fachada: o build não fala com o banco, mas as telas
+          # protegidas precisam que as variáveis existam.
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: chave-de-ci
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000

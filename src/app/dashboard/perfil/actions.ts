@@ -192,18 +192,27 @@ export async function updateFarePrice(
 }
 
 /** Tira a passagem da lista sem apagar o histórico dela. */
-export async function archiveFarePrice(formData: FormData): Promise<void> {
+export async function archiveFarePrice(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const groupId = String(formData.get('group_id') ?? '')
-  if (!groupId) return
+  if (!groupId) return { error: 'Passagem não encontrada.' }
 
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) return
+  if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  await supabase.from('fare_prices').update({ active: false }).eq('group_id', groupId)
+  const { error } = await supabase
+    .from('fare_prices')
+    .update({ active: false })
+    .eq('group_id', groupId)
+
+  if (error) return { error: 'Não foi possível arquivar. Tente de novo.' }
 
   revalidatePath('/dashboard/perfil')
+  return {}
 }

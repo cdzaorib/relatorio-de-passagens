@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { archiveFarePrice } from '@/app/dashboard/perfil/actions'
 import { FarePriceForm } from '@/components/perfil/FarePriceForm'
+import { DeleteForm } from '@/components/ui/DeleteForm'
 import { formatBRL } from '@/lib/format'
 import { CARD_LABELS, TRANSPORT_LABELS, type FarePrice } from '@/types'
 
@@ -56,26 +57,14 @@ export function FarePriceList({ farePrices }: { farePrices: FarePrice[] }) {
                   Editar
                 </button>
 
-                <form
+                <DeleteForm
                   action={archiveFarePrice}
-                  onSubmit={(event) => {
-                    if (
-                      !window.confirm(
-                        `Arquivar ${farePrice.label}? Ela some da lista, mas os trechos já lançados e o histórico continuam intactos.`,
-                      )
-                    ) {
-                      event.preventDefault()
-                    }
-                  }}
+                  fields={{ group_id: farePrice.group_id }}
+                  confirmar={`Arquivar ${farePrice.label}? Ela some da lista, mas os trechos já lançados e o histórico continuam intactos.`}
+                  className="rounded-lg px-3 py-1.5 text-sm text-muted transition hover:bg-alerta-soft hover:text-alerta disabled:opacity-60"
                 >
-                  <input type="hidden" name="group_id" value={farePrice.group_id} />
-                  <button
-                    type="submit"
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-alerta-soft hover:text-alerta"
-                  >
-                    Arquivar
-                  </button>
-                </form>
+                  Arquivar
+                </DeleteForm>
               </div>
             </div>
           )}

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { deleteTrip, deleteTripsOfDay } from '@/app/dashboard/trips/actions'
 import { TripForm } from '@/components/trips/TripForm'
 import { CardTag } from '@/components/ui/CardTag'
+import { DeleteForm } from '@/components/ui/DeleteForm'
 import { RouteLine } from '@/components/ui/RouteLine'
 import { formatBRL, formatDate } from '@/lib/format'
 import type { Suggestions } from '@/lib/suggestions'
@@ -57,26 +58,14 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                   {dayTrips.length} {dayTrips.length === 1 ? 'trecho' : 'trechos'} ·{' '}
                   {formatBRL(dayTotal)}
                 </span>
-                <form
+                <DeleteForm
                   action={deleteTripsOfDay}
-                  onSubmit={(event) => {
-                    if (
-                      !window.confirm(
-                        `Excluir os ${dayTrips.length} trechos de ${formatDate(date)}?`,
-                      )
-                    ) {
-                      event.preventDefault()
-                    }
-                  }}
+                  fields={{ date }}
+                  confirmar={`Excluir os ${dayTrips.length} trechos de ${formatDate(date)}?`}
+                  className="text-sm text-muted transition hover:text-alerta disabled:opacity-60"
                 >
-                  <input type="hidden" name="date" value={date} />
-                  <button
-                    type="submit"
-                    className="text-sm font-medium text-muted transition hover:text-alerta"
-                  >
-                    Excluir o dia
-                  </button>
-                </form>
+                  Excluir o dia
+                </DeleteForm>
               </div>
             </div>
 
@@ -143,22 +132,14 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                             >
                               Editar
                             </button>
-                            <form
+                            <DeleteForm
                               action={deleteTrip}
-                              onSubmit={(event) => {
-                                if (!window.confirm('Excluir este trecho?')) {
-                                  event.preventDefault()
-                                }
-                              }}
+                              fields={{ id: trip.id }}
+                              confirmar="Excluir este trecho?"
+                              className="rounded-lg px-2.5 py-1 text-xs text-muted transition hover:bg-alerta-soft hover:text-alerta disabled:opacity-60"
                             >
-                              <input type="hidden" name="id" value={trip.id} />
-                              <button
-                                type="submit"
-                                className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted transition hover:bg-alerta-soft hover:text-alerta"
-                              >
-                                Excluir
-                              </button>
-                            </form>
+                              Excluir
+                            </DeleteForm>
                           </div>
                         </td>
                       </tr>

@@ -180,15 +180,21 @@ export async function updatePlace(_prevState: FormState, formData: FormData): Pr
 }
 
 /** Exclui o local e seus trechos. Não mexe no que já foi lançado. */
-export async function deletePlace(formData: FormData): Promise<void> {
+export async function deletePlace(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const id = String(formData.get('id') ?? '')
-  if (!id) return
+  if (!id) return { error: 'Local não encontrado.' }
 
   const { supabase, user } = await requireUser()
-  if (!user) return
+  if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  await supabase.from('places').delete().eq('id', id)
+  const { error } = await supabase.from('places').delete().eq('id', id)
+
+  if (error) return { error: 'Não foi possível excluir o local. Tente de novo.' }
 
   revalidatePath('/dashboard/locais')
   revalidatePath('/dashboard/trips')
+  return {}
 }

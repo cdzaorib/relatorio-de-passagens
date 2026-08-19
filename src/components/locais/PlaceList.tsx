@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { deletePlace } from '@/app/dashboard/locais/actions'
 import { PlaceForm } from '@/components/locais/PlaceForm'
+import { DeleteForm } from '@/components/ui/DeleteForm'
 import { RouteLine } from '@/components/ui/RouteLine'
 import { formatBRL } from '@/lib/format'
 import type { Suggestions } from '@/lib/suggestions'
@@ -65,26 +66,14 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
                 >
                   Editar
                 </button>
-                <form
+                <DeleteForm
                   action={deletePlace}
-                  onSubmit={(event) => {
-                    if (
-                      !window.confirm(
-                        `Excluir o local ${place.name}? Os trechos já lançados continuam no relatório.`,
-                      )
-                    ) {
-                      event.preventDefault()
-                    }
-                  }}
+                  fields={{ id: place.id }}
+                  confirmar={`Excluir o local ${place.name}? Os trechos já lançados continuam no relatório.`}
+                  className="rounded-lg px-3 py-1.5 text-sm text-muted transition hover:bg-alerta-soft hover:text-alerta disabled:opacity-60"
                 >
-                  <input type="hidden" name="id" value={place.id} />
-                  <button
-                    type="submit"
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-alerta-soft hover:text-alerta"
-                  >
-                    Excluir
-                  </button>
-                </form>
+                  Excluir
+                </DeleteForm>
               </div>
             </div>
 
