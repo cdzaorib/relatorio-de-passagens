@@ -8,7 +8,7 @@ PDF que o financeiro já conhece.
 
 ```bash
 npm run dev        # desenvolvimento
-npm test           # 96 testes, node:test embutido, ~1s
+npm test           # 102 testes, node:test embutido, ~1s
 npm run build      # produção; roda ESLint e TypeScript junto
 ```
 
@@ -34,6 +34,11 @@ derive o cartão do transporte na hora de salvar.
 **Reajuste não sobrescreve preço.** Editar o valor de uma passagem desativa o
 registro atual e cria outro no mesmo `group_id`. O trecho já lançado guarda
 sua própria cópia do valor, então relatório fechado não muda sozinho.
+
+**Falha de banco nunca vira lista vazia.** `data ?? []` transforma erro em
+"nenhum trecho lançado", e a pessoa conclui que o app perdeu o trabalho dela.
+Toda leitura passa por `primeiraFalha` (`src/lib/query.ts`) e a tela diz o que
+houve; coluna faltando manda rodar a migração, não recarregar a página.
 
 **Período é livre.** Quinzena é só o padrão de quem nunca escolheu; o último
 período escolhido fica num cookie.

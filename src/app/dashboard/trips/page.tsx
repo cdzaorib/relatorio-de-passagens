@@ -4,10 +4,12 @@ import Link from 'next/link'
 import { PlaceLauncher } from '@/components/trips/PlaceLauncher'
 import { TripForm } from '@/components/trips/TripForm'
 import { TripsTable } from '@/components/trips/TripsTable'
+import { Alert } from '@/components/ui/Alert'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { daysAgoISO, todayISO } from '@/lib/format'
 import { formatPeriodLabel, resolvePeriod } from '@/lib/period'
 import { readStoredPeriod } from '@/lib/period-cookie'
+import { primeiraFalha } from '@/lib/query'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
 import type { PlaceWithLegs } from '@/types'
@@ -45,6 +47,7 @@ export default async function TripsPage() {
     getSuggestions(supabase),
   ])
 
+  const falha = primeiraFalha(faresResult, tripsResult, placesResult, legsResult)
   const fares = faresResult.data ?? []
   const trips = tripsResult.data ?? []
   const legs = legsResult.data ?? []
@@ -65,6 +68,8 @@ export default async function TripsPage() {
           idas e duas voltas.
         </p>
       </div>
+
+      {falha ? <Alert variant="error">{falha.mensagem}</Alert> : null}
 
       {placesWithLegs.length > 0 ? (
         <Card tone="accent">

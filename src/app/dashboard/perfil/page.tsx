@@ -4,7 +4,9 @@ import { FarePriceForm } from '@/components/perfil/FarePriceForm'
 import { FarePriceHistory } from '@/components/perfil/FarePriceHistory'
 import { FarePriceList } from '@/components/perfil/FarePriceList'
 import { ProfileForm } from '@/components/perfil/ProfileForm'
+import { Alert } from '@/components/ui/Alert'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { primeiraFalha } from '@/lib/query'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Perfil' }
@@ -32,6 +34,7 @@ export default async function PerfilPage() {
   ])
 
   const profile = profileResult.data
+  const falha = primeiraFalha(activeResult, historyResult)
   const activeFares = activeResult.data ?? []
   const history = historyResult.data ?? []
 
@@ -43,6 +46,8 @@ export default async function PerfilPage() {
           Seus dados do cabeçalho e os valores das passagens que você usa.
         </p>
       </div>
+
+      {falha ? <Alert variant="error">{falha.mensagem}</Alert> : null}
 
       <Card>
         <CardHeader>

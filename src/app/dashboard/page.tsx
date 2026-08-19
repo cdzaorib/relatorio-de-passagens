@@ -2,10 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 import { PeriodFilter } from '@/components/dashboard/PeriodFilter'
+import { Alert } from '@/components/ui/Alert'
 import { ReportPreview } from '@/components/dashboard/ReportPreview'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { todayISO } from '@/lib/format'
 import { periodQuery, resolvePeriod } from '@/lib/period'
+import { primeiraFalha } from '@/lib/query'
 import { readStoredPeriod } from '@/lib/period-cookie'
 import { summarize } from '@/lib/report'
 import { createClient } from '@/lib/supabase/server'
@@ -40,12 +42,19 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       .order('leg_order', { ascending: true }),
   ])
 
+  const falha = primeiraFalha(profileResult, tripsResult)
   const profile = profileResult.data
   const trips = tripsResult.data ?? []
   const totals = summarize(trips)
 
   return (
     <div className="space-y-8">
+      {falha ? (
+        <div className="no-print">
+          <Alert variant="error">{falha.mensagem}</Alert>
+        </div>
+      ) : null}
+
       <div className="no-print flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="letreiro text-3xl leading-none text-ink sm:text-4xl">Relatório</h1>

@@ -4,6 +4,7 @@ import { todayISO } from '@/lib/format'
 import { buildReportPdf } from '@/lib/pdf'
 import { resolvePeriod } from '@/lib/period'
 import { readStoredPeriod } from '@/lib/period-cookie'
+import { primeiraFalha } from '@/lib/query'
 import { summarize } from '@/lib/report'
 import { createClient } from '@/lib/supabase/server'
 
@@ -45,6 +46,17 @@ export async function GET(request: NextRequest) {
       // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
       .order('leg_order', { ascending: true }),
   ])
+
+  // PDF com zero trecho por causa de erro de banco seria pior do que nenhum
+  // PDF: a pessoa entregaria ao financeiro um relatório que diz que ela não
+  // se deslocou no mês.
+  const falha = primeiraFalha(profileResult, tripsResult)
+  if (falha) {
+    return new NextResponse(falha.mensagem, {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+    })
+  }
 
   const trips = tripsResult.data ?? []
   const pdf = await buildReportPdf({

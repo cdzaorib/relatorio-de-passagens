@@ -2,7 +2,9 @@ import type { Metadata } from 'next'
 
 import { PlaceForm } from '@/components/locais/PlaceForm'
 import { PlaceList } from '@/components/locais/PlaceList'
+import { Alert } from '@/components/ui/Alert'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
+import { primeiraFalha } from '@/lib/query'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
 import type { PlaceWithLegs } from '@/types'
@@ -19,6 +21,7 @@ export default async function LocaisPage() {
     getSuggestions(supabase),
   ])
 
+  const falha = primeiraFalha(faresResult, placesResult, legsResult)
   const fares = faresResult.data ?? []
   const legs = legsResult.data ?? []
 
@@ -36,6 +39,8 @@ export default async function LocaisPage() {
           escolher o local e a data para lançar o dia inteiro.
         </p>
       </div>
+
+      {falha ? <Alert variant="error">{falha.mensagem}</Alert> : null}
 
       <Card>
         <CardHeader>

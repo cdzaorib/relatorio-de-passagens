@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { parseAmount } from '@/lib/format'
 import type { FieldErrors, FormState } from '@/lib/form-state'
+import { descreveFalha } from '@/lib/query'
 import { createClient } from '@/lib/supabase/server'
 import { buildDayLegs, legsToTrips, mirrorLegs, type LegDraft } from '@/lib/trips'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
@@ -194,7 +195,8 @@ export async function createTrip(_prevState: FormState, formData: FormData): Pro
   const { error } = await supabase.from('trips').insert(legsToTrips(dayLegs, user.id, date))
 
   if (error) {
-    return { error: 'Não foi possível salvar. Tente de novo.' }
+    // "Tente de novo" só ajuda quando tentar de novo pode dar certo.
+    return { error: descreveFalha(error).mensagem }
   }
 
   revalidatePath('/dashboard/trips')
@@ -240,7 +242,7 @@ export async function updateTrip(_prevState: FormState, formData: FormData): Pro
     .eq('id', id)
 
   if (error) {
-    return { error: 'Não foi possível salvar a alteração.' }
+    return { error: descreveFalha(error).mensagem }
   }
 
   revalidatePath('/dashboard/trips')
@@ -342,7 +344,7 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
   const { error } = await supabase.from('trips').insert(legsToTrips(dayLegs, user.id, date))
 
   if (error) {
-    return { error: 'Não foi possível lançar o dia. Tente de novo.' }
+    return { error: descreveFalha(error).mensagem }
   }
 
   revalidatePath('/dashboard/trips')
