@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 
 import { getSupabaseAnonKey, getSupabaseUrl } from '@/lib/env'
+import { COOKIE_SEGURO } from '@/lib/supabase/cookies'
 import type { Database } from '@/types/database'
 
 /**
@@ -19,7 +20,7 @@ export async function createClient() {
       setAll(cookiesToSet) {
         try {
           for (const { name, value, options } of cookiesToSet) {
-            cookieStore.set(name, value, options)
+            cookieStore.set(name, value, { ...options, ...COOKIE_SEGURO })
           }
         } catch {
           // Server Component não pode escrever cookie. O middleware (F2)

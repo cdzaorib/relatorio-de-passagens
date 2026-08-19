@@ -25,7 +25,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     .eq('id', user.id)
     .maybeSingle()
 
-  const displayName = profile?.name || user.email || 'Você'
+  // Nunca cair no e-mail: ele iria para o HTML de toda página do painel e
+  // ficaria visível no código-fonte e no console. Só o nome do perfil.
+  const displayName = profile?.name?.trim() || 'Minha conta'
 
   return (
     <div className="min-h-screen">

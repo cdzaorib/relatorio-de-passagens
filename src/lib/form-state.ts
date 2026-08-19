@@ -17,8 +17,3 @@ export type FormState = {
 }
 
 export const EMPTY_FORM_STATE: FormState = {}
-
-/** Atalho para montar o retorno de erro de validação. */
-export function invalid(fieldErrors: FieldErrors, values?: Record<string, string>): FormState {
-  return { fieldErrors, values }
-}

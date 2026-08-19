@@ -156,7 +156,12 @@ export async function requestPasswordReset(
     await supabase.auth.resetPasswordForEmail(email, { redirectTo: resetUrl })
     return genericSuccess
   } catch (cause) {
-    console.error('Falha ao enviar e-mail de redefinição:', cause)
+    // Só a mensagem: o objeto de erro do provedor costuma trazer o endereço
+    // de destino, e log de servidor não é lugar para guardar e-mail de ninguém.
+    console.error(
+      'Falha ao enviar e-mail de redefinição:',
+      cause instanceof Error ? cause.message : 'erro desconhecido',
+    )
     return {
       error: 'Não conseguimos enviar o e-mail agora. Tente de novo em alguns minutos.',
       values,

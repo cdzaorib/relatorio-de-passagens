@@ -4,9 +4,9 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { parsePeriodParams, periodHref, serializePeriod } from '@/lib/period'
+import { PERIOD_COOKIE } from '@/lib/period-cookie'
 
-const PERIOD_COOKIE = 'periodo'
-const ONE_YEAR = 60 * 60 * 24 * 365
+const UM_ANO = 60 * 60 * 24 * 365
 
 /**
  * Guarda o período escolhido e leva para ele.
@@ -25,7 +25,7 @@ export async function applyPeriod(formData: FormData): Promise<void> {
 
   const cookieStore = await cookies()
   cookieStore.set(PERIOD_COOKIE, serializePeriod(period), {
-    maxAge: ONE_YEAR,
+    maxAge: UM_ANO,
     sameSite: 'lax',
     path: '/',
   })

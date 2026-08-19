@@ -5,7 +5,7 @@ import type { FarePrice } from '@/types'
  * 'Ônibus 323' → '323', '143C' → '143C', 'Barca Cocotá' → ''.
  * É só um palpite para adiantar o preenchimento — o campo continua editável.
  */
-export function guessLineFromLabel(label: string): string {
+function guessLineFromLabel(label: string): string {
   const match = label.match(/\b\d+[A-Za-z]?\b/)
   return match ? match[0] : ''
 }

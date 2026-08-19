@@ -7,8 +7,6 @@
 export type TransportType = 'onibus' | 'barca'
 export type CardType = 'riocard' | 'jae'
 
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
-
 export interface Database {
   public: {
     Tables: {

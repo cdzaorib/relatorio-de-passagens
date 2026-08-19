@@ -93,3 +93,18 @@ export function translateAuthError(message: string): string {
 
   return 'Não foi possível concluir. Tente de novo em instantes.'
 }
+
+/**
+ * Esconde o miolo do endereço: 'carlos.dias@empresa.com' vira 'ca••••@empresa.com'.
+ * Serve para confirmar de qual conta se trata sem imprimir o endereço inteiro
+ * no HTML, que fica legível no código-fonte da página.
+ */
+export function maskEmail(email: string | undefined): string {
+  if (!email) return ''
+
+  const [usuario, dominio] = email.split('@')
+  if (!dominio) return '•'.repeat(email.length)
+
+  const visivel = usuario.slice(0, 2)
+  return `${visivel}${'•'.repeat(Math.max(usuario.length - 2, 1))}@${dominio}`
+}

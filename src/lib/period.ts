@@ -10,7 +10,7 @@ function pad(value: number): string {
 }
 
 /** Último dia do mês da data informada. */
-export function lastDayOfMonth(iso: string): string {
+function lastDayOfMonth(iso: string): string {
   const [year, month] = iso.split('-').map(Number)
   const day = new Date(Date.UTC(year, month, 0)).getUTCDate()
   return `${year}-${pad(month)}-${pad(day)}`
@@ -33,7 +33,7 @@ export function halfMonths(iso: string): { first: Period; second: Period; whole:
 }
 
 /** A quinzena em que a data cai — o padrão de quem abre o app hoje. */
-export function currentHalfMonth(iso: string = todayISO()): Period {
+function currentHalfMonth(iso: string = todayISO()): Period {
   const day = Number(iso.split('-')[2])
   const { first, second } = halfMonths(iso)
   return day <= 15 ? first : second
@@ -59,7 +59,7 @@ export function parsePeriodParams(params: { de?: string; ate?: string }): Period
 }
 
 /** Período guardado no cookie, no formato 'yyyy-mm-dd..yyyy-mm-dd'. */
-export function parseStoredPeriod(raw: string | undefined): Period | null {
+function parseStoredPeriod(raw: string | undefined): Period | null {
   if (!raw) return null
 
   const [from, to] = raw.split('..')

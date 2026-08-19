@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm'
 import { Alert } from '@/components/ui/Alert'
 import { createClient } from '@/lib/supabase/server'
+import { maskEmail } from '@/lib/validation'
 
 export const metadata: Metadata = { title: 'Nova senha' }
 
@@ -42,7 +43,8 @@ export default async function ResetPasswordPage() {
       <div className="space-y-1">
         <h1 className="letreiro text-2xl text-ink">Nova senha</h1>
         <p className="text-sm leading-relaxed text-muted">
-          Escolha a senha da conta <strong className="text-ink">{user.email}</strong>.
+          Escolha a senha da conta{' '}
+          <strong className="dados text-ink">{maskEmail(user.email)}</strong>.
         </p>
       </div>
 

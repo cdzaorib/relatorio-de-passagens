@@ -78,13 +78,27 @@ E o **Confirm signup** para:
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard
 ```
 
-### Segredos
+### Segredos e privacidade
 
 Chave nenhuma mora no repositório. `.env.local` está no `.gitignore`; em
 produção, as variáveis vão nos *Environment Variables* da Vercel. A chave
 secreta do Supabase (`SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY`)
 ignora a RLS por completo — ela só é lida em código de servidor e nunca pode
 aparecer em variável `NEXT_PUBLIC_*`.
+
+**O e-mail do usuário não vai para o HTML.** O cabeçalho mostra o nome do
+perfil, nunca o endereço, e a tela de nova senha exibe o e-mail mascarado
+(`cd•••@yahoo.com`) só para confirmar de qual conta se trata.
+
+**O cookie de sessão é `httpOnly`.** O token carrega o e-mail e o id do
+usuário; sem isso, qualquer script na página leria tudo com `document.cookie`.
+Só é possível porque o app inteiro fala com o Supabase pelo servidor — não
+existe cliente de browser do Supabase no projeto. Um componente de cliente que
+venha a precisar da sessão vai falhar, e a decisão terá de ser revista de
+propósito.
+
+Todas as respostas levam `X-Content-Type-Options`, `X-Frame-Options: DENY`,
+`Referrer-Policy`, `Permissions-Policy` e HSTS, e o `X-Powered-By` é omitido.
 
 ## Perfil e preços
 
@@ -221,8 +235,8 @@ src/
     resend.ts          e-mail de redefinição de senha
     validation.ts      validações e tradução dos erros do Supabase
     supabase/
-      client.ts        cliente para Client Components
       server.ts        cliente para Server Components / Actions
+      cookies.ts       opções do cookie de sessão (httpOnly)
       admin.ts         cliente service role (só servidor)
       middleware.ts    renovação de sessão e controle de acesso
   middleware.ts        entrada do middleware do Next

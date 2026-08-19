@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { getSupabaseAnonKey, getSupabaseUrl, isSupabaseConfigured } from '@/lib/env'
+import { COOKIE_SEGURO } from '@/lib/supabase/cookies'
 import type { Database } from '@/types/database'
 
 /** Rotas que exigem login. */
@@ -42,7 +43,7 @@ export async function updateSession(request: NextRequest) {
         }
         supabaseResponse = NextResponse.next({ request })
         for (const { name, value, options } of cookiesToSet) {
-          supabaseResponse.cookies.set(name, value, options)
+          supabaseResponse.cookies.set(name, value, { ...options, ...COOKIE_SEGURO })
         }
       },
     },

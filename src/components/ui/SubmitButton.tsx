@@ -5,7 +5,6 @@ import { useFormStatus } from 'react-dom'
 type SubmitButtonProps = {
   children: React.ReactNode
   pendingLabel?: string
-  variant?: 'primary' | 'secondary'
   className?: string
 }
 
@@ -22,22 +21,16 @@ function Spinner() {
 export function SubmitButton({
   children,
   pendingLabel = 'Enviando...',
-  variant = 'primary',
   className = '',
 }: SubmitButtonProps) {
   const { pending } = useFormStatus()
-
-  const variants = {
-    primary: 'bg-ink text-paper hover:bg-ink-soft focus-visible:outline-ink',
-    secondary: 'border border-line bg-surface text-ink hover:bg-paper focus-visible:outline-ink',
-  }
 
   return (
     <button
       type="submit"
       disabled={pending}
       aria-busy={pending}
-      className={`letreiro inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 ${variants[variant]} ${className}`}
+      className={`letreiro inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm transition focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-60 bg-ink text-paper hover:bg-ink-soft focus-visible:outline-ink ${className}`}
     >
       {pending ? <Spinner /> : null}
       {pending ? pendingLabel : children}
