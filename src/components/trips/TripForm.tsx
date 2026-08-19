@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState, useEffect, useState } from 'react'
 
 import { createTrip, updateTrip } from '@/app/dashboard/trips/actions'
@@ -105,6 +106,17 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
 
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
       {state.success && !isEditing ? <Alert variant="success">{state.success}</Alert> : null}
+
+      {fares.length === 0 && !isEditing ? (
+        <p className="rounded-lg border border-line bg-paper px-4 py-3 text-sm leading-relaxed text-muted">
+          Você ainda não cadastrou nenhuma passagem, então o valor precisa ser
+          digitado a cada trecho.{' '}
+          <Link href="/dashboard/perfil" className="font-medium text-marca-texto hover:text-marca">
+            Cadastre as suas no perfil
+          </Link>{' '}
+          e o formulário passa a preencher transporte, cartão e valor sozinho.
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <TextField

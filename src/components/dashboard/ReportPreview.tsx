@@ -1,4 +1,5 @@
 import { CardTag } from '@/components/ui/CardTag'
+import { EmptyState } from '@/components/ui/EmptyState'
 import { formatBRL, formatDate } from '@/lib/format'
 import { formatPeriodLabel, type Period } from '@/lib/period'
 import type { ReportTotals } from '@/lib/report'
@@ -42,9 +43,11 @@ export function ReportPreview({ profile, period, trips, totals }: ReportPreviewP
       </div>
 
       {trips.length === 0 ? (
-        <p className="px-5 py-8 text-center text-sm text-muted">
-          Nenhum trecho neste período. Ajuste as datas ou lance seus trechos.
-        </p>
+        <EmptyState
+          titulo="Nenhum trecho neste período"
+          descricao="Se as datas estiverem certas, é porque ainda não há lançamento. Comece pelo dia mais recente."
+          acao={{ href: '/dashboard/trips', label: 'Lançar trechos' }}
+        />
       ) : (
         <>
           <div className="overflow-x-auto">

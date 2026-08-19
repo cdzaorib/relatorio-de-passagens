@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState, useEffect, useState } from 'react'
 
 import { createPlace, updatePlace } from '@/app/dashboard/locais/actions'
@@ -130,6 +131,17 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
 
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
       {state.success && !isEditing ? <Alert variant="success">{state.success}</Alert> : null}
+
+      {fares.length === 0 && !isEditing ? (
+        <p className="rounded-lg border border-line bg-paper px-4 py-3 text-sm leading-relaxed text-muted">
+          Sem passagem cadastrada, o valor de cada trecho fica fixo no local e
+          não acompanha reajuste.{' '}
+          <Link href="/dashboard/perfil" className="font-medium text-marca-texto hover:text-marca">
+            Cadastre as passagens no perfil
+          </Link>{' '}
+          antes, se puder.
+        </p>
+      ) : null}
 
       <div className="sm:max-w-sm">
         <TextField
