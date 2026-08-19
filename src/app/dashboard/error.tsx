@@ -21,7 +21,7 @@ export default function DashboardError({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-ink">Algo deu errado</h1>
+      <h1 className="letreiro text-2xl text-ink">Algo deu errado</h1>
 
       <Alert variant="error">
         Não conseguimos carregar esta tela agora. Seus lançamentos estão a
@@ -32,13 +32,13 @@ export default function DashboardError({
         <button
           type="button"
           onClick={reset}
-          className="rounded-lg bg-ink px-4 py-2.5 font-medium text-white transition hover:bg-ink-soft"
+          className="rounded-lg bg-ink letreiro px-4 py-2.5 text-sm text-paper transition hover:bg-ink-soft"
         >
           Tentar de novo
         </button>
         <a
           href="/dashboard"
-          className="rounded-lg border border-line px-4 py-2.5 font-medium text-ink-soft transition hover:bg-paper"
+          className="rounded-lg border border-line letreiro px-4 py-2.5 text-sm text-ink transition hover:bg-paper"
         >
           Voltar ao início
         </a>
