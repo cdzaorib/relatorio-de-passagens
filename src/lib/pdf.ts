@@ -19,10 +19,24 @@ const HEADER_ROW_HEIGHT = 18
 const FONT_SIZE = 8.5
 const TITLE_SIZE = 13
 
-const INK = rgb(0.06, 0.09, 0.16)
+/*
+ * A mesma paleta da tela, convertida para o espaço de cor do PDF. O relatório
+ * impresso e o relatório na tela são o mesmo documento: divergir de cor faria
+ * o financeiro duvidar de que são a mesma coisa.
+ */
+const CARVAO = rgb(0.149, 0.169, 0.176) // #262b2d
+const MARCA = rgb(0.055, 0.612, 0.525) // #0e9c86, verde do símbolo
+const MARCA_TEXTO = rgb(0.039, 0.478, 0.412) // #0a7a69, o verde que serve a texto
+const MARCA_SUAVE = rgb(0.902, 0.957, 0.945) // #e6f4f1
+const ONIBUS = rgb(0.467, 0.302, 0.02) // #774d05, o ocre escuro que lê bem
+
+const INK = CARVAO
 const MUTED = rgb(0.42, 0.45, 0.5)
 const LINE = rgb(0.85, 0.87, 0.9)
-const STRIPE = rgb(0.97, 0.98, 0.99)
+const STRIPE = rgb(0.98, 0.98, 0.98)
+const PAPEL = rgb(1, 1, 1)
+
+const ALTURA_FAIXA = 62
 
 type Column = {
   titulo: string
@@ -30,6 +44,8 @@ type Column = {
   /** Alinhamento do conteúdo; o cabeçalho segue o mesmo. */
   alinhamento?: 'esquerda' | 'direita'
   valor: (trip: Trip) => string
+  /** Cor do conteúdo, quando ela diz algo. Sem isso, carvão. */
+  cor?: (trip: Trip) => ReturnType<typeof rgb>
 }
 
 const COLUNAS: Column[] = [
@@ -39,7 +55,14 @@ const COLUNAS: Column[] = [
   { titulo: 'CLIENTE / EMPRESA', largura: 105, valor: (t) => t.client },
   { titulo: 'TRANSPORTE', largura: 62, valor: (t) => TRANSPORT_LABELS[t.transport] },
   { titulo: 'LINHA', largura: 38, valor: (t) => t.line ?? '' },
-  { titulo: 'CARTÃO', largura: 58, valor: (t) => CARD_LABELS[t.card] },
+  {
+    titulo: 'CARTÃO',
+    largura: 58,
+    valor: (t) => CARD_LABELS[t.card],
+    // Mesma regra da tela: verde é RIO CARD, ocre é JAÉ. O nome do cartão
+    // continua escrito, então a folha em preto e branco não perde nada.
+    cor: (t) => (t.card === 'riocard' ? MARCA_TEXTO : ONIBUS),
+  },
   {
     titulo: 'VALOR',
     largura: 62,
@@ -89,7 +112,7 @@ function desenhaCabecalhoTabela(page: PDFPage, ctx: Contexto, topo: number): num
     y: base,
     width: CONTENT_WIDTH,
     height: HEADER_ROW_HEIGHT,
-    color: rgb(0.94, 0.96, 0.99),
+    color: MARCA_SUAVE,
   })
 
   let x = MARGIN
@@ -102,7 +125,7 @@ function desenhaCabecalhoTabela(page: PDFPage, ctx: Contexto, topo: number): num
       y: base + 6,
       size: 7,
       font: ctx.negrito,
-      color: MUTED,
+      color: CARVAO,
     })
     x += coluna.largura
   }
@@ -117,24 +140,55 @@ function desenhaCabecalhoTabela(page: PDFPage, ctx: Contexto, topo: number): num
   return base
 }
 
-/** Cabeçalho do documento: título e dados do funcionário. */
+/**
+ * Cabeçalho do documento: faixa de carvão com fio verde, como a barra
+ * superior do app, e abaixo os três campos que o financeiro procura primeiro.
+ */
 function desenhaCabecalhoDocumento(
   page: PDFPage,
   ctx: Contexto,
   profile: Profile | null,
   period: Period,
 ): number {
-  let y = PAGE_HEIGHT - MARGIN
+  // Sangra até a borda: é o que separa um documento de empresa de uma folha
+  // com texto em cima.
+  page.drawRectangle({
+    x: 0,
+    y: PAGE_HEIGHT - ALTURA_FAIXA,
+    width: PAGE_WIDTH,
+    height: ALTURA_FAIXA,
+    color: CARVAO,
+  })
+
+  // O fio verde é a relação carvão + verde do próprio logo.
+  page.drawRectangle({
+    x: 0,
+    y: PAGE_HEIGHT - ALTURA_FAIXA - 3,
+    width: PAGE_WIDTH,
+    height: 3,
+    color: MARCA,
+  })
+
+  page.drawText(sanitize('TECNOARTE'), {
+    x: MARGIN,
+    y: PAGE_HEIGHT - 26,
+    size: 8,
+    font: ctx.negrito,
+    color: MARCA,
+  })
 
   page.drawText(sanitize('RELATÓRIO DE REEMBOLSO DE PASSAGEM'), {
     x: MARGIN,
-    y: y - TITLE_SIZE,
+    y: PAGE_HEIGHT - 47,
     size: TITLE_SIZE,
     font: ctx.negrito,
-    color: INK,
+    color: PAPEL,
   })
 
-  y -= TITLE_SIZE + 18
+  // A faixa não repete o período: ele já é um dos três campos logo abaixo, e
+  // o mesmo dado duas vezes na mesma altura lê como engano de montagem.
+
+  let y = PAGE_HEIGHT - ALTURA_FAIXA - 24
 
   const campos = [
     { rotulo: 'NOME DO FUNCIONÁRIO', valor: profile?.name || '—' },
@@ -170,7 +224,7 @@ function desenhaCabecalhoDocumento(
     start: { x: MARGIN, y },
     end: { x: MARGIN + CONTENT_WIDTH, y },
     thickness: 1,
-    color: rgb(0.55, 0.58, 0.62),
+    color: LINE,
   })
 
   return y - 14
@@ -184,7 +238,7 @@ function desenhaTotais(page: PDFPage, ctx: Contexto, topo: number, totals: Repor
     start: { x: MARGIN, y },
     end: { x: MARGIN + CONTENT_WIDTH, y },
     thickness: 1,
-    color: rgb(0.55, 0.58, 0.62),
+    color: CARVAO,
   })
 
   const linhas = [
@@ -198,22 +252,26 @@ function desenhaTotais(page: PDFPage, ctx: Contexto, topo: number, totals: Repor
     const font = linha.destaque ? ctx.negrito : ctx.regular
     const size = linha.destaque ? 10 : 9
 
+    // O total geral é o número que a pessoa vai receber: fecha o documento
+    // com o mesmo carvão da faixa do topo, para o olho achar sem procurar.
     if (linha.destaque) {
       page.drawRectangle({
         x: MARGIN,
         y: y - 4,
         width: CONTENT_WIDTH,
         height: ROW_HEIGHT + 4,
-        color: rgb(0.94, 0.96, 0.99),
+        color: CARVAO,
       })
     }
+
+    const cor = linha.destaque ? PAPEL : INK
 
     page.drawText(sanitize(linha.rotulo), {
       x: MARGIN + 6,
       y: y + 2,
       size,
       font,
-      color: INK,
+      color: cor,
     })
 
     const valor = sanitize(formatBRL(linha.valor))
@@ -224,7 +282,7 @@ function desenhaTotais(page: PDFPage, ctx: Contexto, topo: number, totals: Repor
       y: y + 2,
       size,
       font,
-      color: INK,
+      color: cor,
     })
   }
 
@@ -295,7 +353,7 @@ export async function buildReportPdf({
         y: y + 5,
         size: FONT_SIZE,
         font: ctx.regular,
-        color: INK,
+        color: coluna.cor?.(trip) ?? INK,
       })
       x += coluna.largura
     }
@@ -320,9 +378,23 @@ export async function buildReportPdf({
 
   desenhaTotais(page, ctx, y - 8, totals)
 
-  // Numeração, depois de saber quantas páginas saíram.
+  // Rodapé, depois de saber quantas páginas saíram. Leva nome e período em
+  // todas: folha solta de relatório de reembolso é fácil de desgarrar na mesa
+  // do financeiro, e sem isso não dá para saber de quem ela é.
   const paginas = doc.getPages()
+  const identificacao = sanitize(
+    [profile?.name, formatPeriodLabel(period)].filter(Boolean).join(' · '),
+  )
+
   paginas.forEach((pagina, indice) => {
+    pagina.drawText(fit(identificacao, ctx.regular, 7, CONTENT_WIDTH - 90), {
+      x: MARGIN,
+      y: MARGIN - 14,
+      size: 7,
+      font: ctx.regular,
+      color: MUTED,
+    })
+
     const texto = sanitize(`Página ${indice + 1} de ${paginas.length}`)
     const largura = ctx.regular.widthOfTextAtSize(texto, 7)
 

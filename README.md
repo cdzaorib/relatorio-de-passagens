@@ -229,8 +229,18 @@ precisaria levar métricas de fonte que costumam quebrar no build.
 
 Detalhes que valem saber:
 
-- A4 retrato, cabeçalho com funcionário, superior e período, tabela zebrada e
-  rodapé com os dois totais e o total geral.
+- A4 retrato. A folha abre com a faixa de carvão sangrando até a borda, o
+  fio verde embaixo e o nome **Tecnoarte** — a mesma barra superior do app,
+  que é o que separa um documento de empresa de uma folha com texto em cima.
+  Depois vêm funcionário, superior e período, a tabela zebrada e o rodapé.
+- A coluna do cartão segue a regra da tela: verde é RIO CARD, ocre é JAÉ. O
+  nome do cartão continua escrito, então a impressão em preto e branco não
+  perde informação nenhuma.
+- **TOTAL GERAL** fecha em carvão com texto branco. É o número que a pessoa
+  vai receber; o olho tem de achá-lo sem procurar.
+- Todas as páginas levam nome e período no rodapé. Folha de reembolso
+  desgarra fácil na mesa do financeiro, e sem isso não dá para saber de quem
+  ela é.
 - Quebra de página repete o cabeçalho da tabela; os totais nunca se partem ao
   meio, e a numeração sai como `Página 2 de 3`.
 - Texto que não cabe na coluna é cortado com reticências.

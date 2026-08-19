@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useState } from 'react'
 
 import { savePlaceFromDay } from '@/app/dashboard/locais/actions'
 import { Alert } from '@/components/ui/Alert'
@@ -25,13 +25,13 @@ export function SaveDayAsPlace({ date, trips }: { date: string; trips: Trip[] })
   const ida = outboundOf(trips)
   const bairros = [ida[0]?.origin, ...ida.map((trecho) => trecho.destination)].filter(Boolean)
 
-  useEffect(() => {
-    if (state.success) setAberto(false)
-  }, [state.success])
-
+  // No cabeçalho do dia cabe uma confirmação curta, não um bloco de aviso:
+  // a mensagem inteira empurraria a linha e o dia deixaria de caber.
   if (state.success) {
     return (
-      <Alert variant="success">{state.success}</Alert>
+      <span role="status" className="text-sm font-medium text-ok">
+        Salvo como local
+      </span>
     )
   }
 
