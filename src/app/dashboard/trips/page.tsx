@@ -46,8 +46,8 @@ export default async function TripsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">Trechos</h1>
-        <p className="text-slate-600">
+        <h1 className="letreiro text-3xl leading-none text-ink">Trechos</h1>
+        <p className="text-muted">
           Cada linha do relatório é um trecho. Um dia normal tem quatro: duas
           idas e duas voltas.
         </p>
@@ -69,12 +69,12 @@ export default async function TripsPage() {
           <CardHeader>
             <CardTitle>Lançar por local</CardTitle>
           </CardHeader>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted">
             Se você repete o mesmo caminho toda semana, cadastre um local uma vez
             e depois lance o dia com dois cliques.{' '}
             <Link
               href="/dashboard/locais"
-              className="font-medium text-brand-600 hover:text-brand-700"
+              className="font-medium text-barca hover:text-barca/80"
             >
               Cadastrar um local
             </Link>
@@ -96,8 +96,8 @@ export default async function TripsPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="font-semibold text-slate-900">Últimos {DAYS_SHOWN} dias</h2>
-          <p className="text-sm text-slate-600">
+          <h2 className="font-semibold text-ink">Últimos {DAYS_SHOWN} dias</h2>
+          <p className="text-sm text-muted">
             Para escolher um período e gerar o PDF, use o início.
           </p>
         </div>

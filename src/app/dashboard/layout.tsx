@@ -29,21 +29,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen">
-      <header className="no-print border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-3 sm:px-6">
-          <div className="flex items-center justify-between gap-3">
-            {/* No celular o nome curto cabe; a partir de sm aparece inteiro. */}
-            <Link href="/dashboard" className="font-semibold text-slate-900">
+      <header className="no-print bg-ink text-paper">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3 py-3">
+            <Link href="/dashboard" className="letreiro text-base tracking-[0.14em]">
               <span className="sm:hidden">Passagens</span>
               <span className="hidden sm:inline">Reembolso de passagem</span>
             </Link>
 
             <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-slate-600 sm:inline">{displayName}</span>
+              <span className="hidden text-sm text-paper/70 sm:inline">{displayName}</span>
               <form action={logout}>
                 <button
                   type="submit"
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  className="letreiro rounded border border-paper/25 px-2.5 py-1 text-xs text-paper/90 transition hover:bg-paper/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
                 >
                   Sair
                 </button>
@@ -51,9 +50,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
           </div>
 
-          <nav className="-mx-1 mt-2 flex items-center gap-1 overflow-x-auto text-sm sm:mt-1">
+          <nav className="-mx-1 flex items-center gap-1 overflow-x-auto pb-1 text-sm">
             {[
-              { href: '/dashboard', label: 'Início' },
+              { href: '/dashboard', label: 'Relatório' },
               { href: '/dashboard/trips', label: 'Trechos' },
               { href: '/dashboard/locais', label: 'Locais' },
               { href: '/dashboard/perfil', label: 'Perfil' },
@@ -61,7 +60,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <Link
                 key={item.href}
                 href={item.href}
-                className="rounded-lg px-2 py-1 whitespace-nowrap text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                className="letreiro rounded px-2.5 py-1.5 text-xs whitespace-nowrap text-paper/70 transition hover:bg-paper/10 hover:text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
               >
                 {item.label}
               </Link>

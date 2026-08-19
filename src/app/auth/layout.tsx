@@ -9,14 +9,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
-      <Link
-        href="/"
-        className="mb-6 text-center text-sm font-semibold tracking-wide text-brand-600 uppercase"
-      >
+      <Link href="/" className="letreiro mb-6 text-center text-xs text-barca">
         Reembolso de passagem
       </Link>
 
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <div className="w-full max-w-md rounded-xl border border-line bg-surface p-6 sm:p-8">
         {children}
       </div>
     </div>

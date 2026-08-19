@@ -10,30 +10,30 @@ export function SetupPendente() {
         Configuração pendente
       </p>
 
-      <h1 className="mt-3 text-3xl font-bold text-slate-900">Falta conectar o Supabase</h1>
+      <h1 className="mt-3 text-3xl font-bold text-ink">Falta conectar o Supabase</h1>
 
-      <p className="mt-4 leading-relaxed text-slate-600">
+      <p className="mt-4 leading-relaxed text-muted">
         O aplicativo subiu, mas ainda não sabe onde fica o banco. Defina as
         variáveis abaixo e publique de novo — em variável que começa com
-        <code className="mx-1 rounded bg-slate-100 px-1.5 py-0.5 text-sm">NEXT_PUBLIC_</code>
+        <code className="mx-1 rounded bg-paper px-1.5 py-0.5 text-sm">NEXT_PUBLIC_</code>
         o valor entra no momento do build, então um novo deploy é necessário.
       </p>
 
-      <ul className="mt-6 space-y-2 font-mono text-sm text-slate-700">
-        <li className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+      <ul className="mt-6 space-y-2 font-mono text-sm text-ink-soft">
+        <li className="rounded-lg border border-line bg-surface px-3 py-2">
           NEXT_PUBLIC_SUPABASE_URL
         </li>
-        <li className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <li className="rounded-lg border border-line bg-surface px-3 py-2">
           NEXT_PUBLIC_SUPABASE_ANON_KEY
         </li>
-        <li className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+        <li className="rounded-lg border border-line bg-surface px-3 py-2">
           NEXT_PUBLIC_SITE_URL
         </li>
       </ul>
 
-      <p className="mt-6 text-sm leading-relaxed text-slate-500">
+      <p className="mt-6 text-sm leading-relaxed text-muted">
         Os valores estão no Supabase em <strong>Project Settings &rsaquo; API</strong>. O
-        arquivo <code className="rounded bg-slate-100 px-1 py-0.5">.env.example</code> do
+        arquivo <code className="rounded bg-paper px-1 py-0.5">.env.example</code> do
         repositório lista todas as variáveis, inclusive as opcionais do envio
         de e-mail.
       </p>

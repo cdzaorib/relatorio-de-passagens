@@ -8,7 +8,9 @@ import { SelectField } from '@/components/ui/SelectField'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { TextField } from '@/components/ui/TextField'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
-import { TRANSPORT_LABELS, type PlaceWithLegs } from '@/types'
+import { RouteLine } from '@/components/ui/RouteLine'
+import { mirrorLegs } from '@/lib/trips'
+import { type PlaceWithLegs } from '@/types'
 
 /**
  * Atalho do dia a dia: escolher o local e a data lança a ida inteira e,
@@ -54,32 +56,49 @@ export function PlaceLauncher({ places, today }: { places: PlaceWithLegs[]; toda
           name="round_trip"
           checked={includeReturn}
           onChange={(event) => setIncludeReturn(event.target.checked)}
-          className="size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+          className="size-4 rounded border-line text-barca focus:ring-barca"
         />
-        <span className="text-sm text-slate-700">Lançar também a volta para casa</span>
+        <span className="text-sm text-ink-soft">Lançar também a volta para casa</span>
       </label>
 
       {selected && legCount > 0 ? (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-medium text-slate-700">
-            Vai lançar {totalLegs} {totalLegs === 1 ? 'trecho' : 'trechos'}:
+        <div className="rounded-lg border border-line bg-surface p-4">
+          <p className="letreiro text-[0.7rem] text-muted">
+            Vai lançar {totalLegs} {totalLegs === 1 ? 'trecho' : 'trechos'}
           </p>
-          <ol className="mt-2 space-y-1 text-sm text-slate-600">
-            {selected.legs.map((leg) => (
-              <li key={leg.id}>
-                {leg.origin} → {leg.destination} · {TRANSPORT_LABELS[leg.transport]}
-                {leg.line ? ` ${leg.line}` : ''}
-              </li>
-            ))}
-            {includeReturn
-              ? [...selected.legs].reverse().map((leg) => (
-                  <li key={`volta-${leg.id}`} className="text-slate-500">
-                    {leg.destination} → {leg.origin} · {TRANSPORT_LABELS[leg.transport]}
-                    {leg.line ? ` ${leg.line}` : ''} (volta)
-                  </li>
-                ))
-              : null}
-          </ol>
+
+          <div className="mt-3">
+            <RouteLine
+              steps={[
+                ...selected.legs.map((leg) => ({
+                  origin: leg.origin,
+                  destination: leg.destination,
+                  transport: leg.transport,
+                  line: leg.line,
+                  value: Number(leg.value),
+                })),
+                ...(includeReturn
+                  ? mirrorLegs(
+                      selected.legs.map((leg) => ({
+                        origin: leg.origin,
+                        destination: leg.destination,
+                        client: '',
+                        transport: leg.transport,
+                        line: leg.line,
+                        card: leg.card,
+                        value: Number(leg.value),
+                      })),
+                    ).map((leg) => ({
+                      origin: leg.origin,
+                      destination: leg.destination,
+                      transport: leg.transport,
+                      line: leg.line,
+                      value: leg.value,
+                    }))
+                  : []),
+              ]}
+            />
+          </div>
         </div>
       ) : null}
 

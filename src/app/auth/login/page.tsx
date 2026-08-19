@@ -18,8 +18,8 @@ export default async function LoginPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">Entrar</h1>
-        <p className="text-sm text-slate-600">Acesse para lançar seus trechos do período.</p>
+        <h1 className="letreiro text-2xl text-ink">Entrar</h1>
+        <p className="text-sm leading-relaxed text-muted">Acesse para lançar seus trechos do período.</p>
       </div>
 
       {params.erro === 'link-invalido' ? (
@@ -30,15 +30,15 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
       <LoginForm redirectTo={redirectTo} />
 
-      <div className="space-y-2 text-sm text-slate-600">
+      <div className="space-y-2 text-sm text-muted">
         <p>
-          <Link href="/auth/forgot" className="font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/auth/forgot" className="font-medium text-barca hover:text-barca/80">
             Esqueci minha senha
           </Link>
         </p>
         <p>
           Ainda não tem conta?{' '}
-          <Link href="/auth/signup" className="font-medium text-brand-600 hover:text-brand-700">
+          <Link href="/auth/signup" className="font-medium text-barca hover:text-barca/80">
             Criar conta
           </Link>
         </p>

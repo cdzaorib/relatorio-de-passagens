@@ -1,57 +1,64 @@
 import Link from 'next/link'
 
-/** Página pública de entrada. */
+import { RouteLine } from '@/components/ui/RouteLine'
+
+/** Um dia comum, desenhado: é o que o app faz em uma olhada. */
+const DIA_EXEMPLO = [
+  { origin: 'Bananal', destination: 'Cocotá', transport: 'onibus' as const, line: '323', value: 4.7 },
+  { origin: 'Cocotá', destination: 'Praça XV', transport: 'barca' as const, value: 5 },
+  { origin: 'Praça XV', destination: 'Cocotá', transport: 'barca' as const, value: 5 },
+  { origin: 'Cocotá', destination: 'Bananal', transport: 'onibus' as const, line: '323', value: 4.7 },
+]
+
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
-      <p className="text-sm font-semibold tracking-wide text-brand-600 uppercase">
-        Reembolso de passagem
-      </p>
+    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-16 sm:px-6">
+      <p className="letreiro text-xs text-barca">Reembolso de passagem</p>
 
-      <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-        Chega de planilha manual
+      <h1 className="letreiro mt-3 text-5xl leading-[0.95] text-ink sm:text-6xl">
+        Quatro trechos,
+        <br />
+        dois cliques
       </h1>
 
-      <p className="mt-5 max-w-2xl text-lg leading-relaxed text-slate-600">
-        Lance os trechos de ônibus e barca conforme o dia acontece, escolha o
-        período e baixe o relatório de reembolso pronto em PDF — no mesmo
-        formato que o financeiro já recebe hoje.
+      <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
+        Um dia de trabalho são quatro conduções e quatro linhas na planilha. Aqui
+        você salva o caminho uma vez e, no dia, escolhe o local e a data — a ida
+        entra e a volta vem espelhada.
       </p>
 
-      <ul className="mt-8 space-y-3 text-slate-700">
-        <li className="flex gap-3">
-          <span aria-hidden className="text-brand-600">
-            •
-          </span>
-          Valores de passagem cadastrados uma vez e reaproveitados, com
-          histórico de reajustes.
-        </li>
-        <li className="flex gap-3">
-          <span aria-hidden className="text-brand-600">
-            •
-          </span>
-          Volta espelhada gerada automaticamente quando você retorna para o
-          mesmo lugar de onde saiu.
-        </li>
-        <li className="flex gap-3">
-          <span aria-hidden className="text-brand-600">
-            •
-          </span>
-          Totais separados por RIO CARD e JAÉ, do jeito que a planilha antiga
-          fazia.
-        </li>
+      {/* O dia como linha de percurso: mostra o produto em vez de descrevê-lo. */}
+      <div className="mt-10 rounded-xl border border-line bg-surface p-5 sm:p-6">
+        <div className="mb-4 flex items-baseline justify-between gap-3">
+          <p className="letreiro text-[0.7rem] text-muted">Terça, 3 de agosto</p>
+          <p className="dados text-sm text-ink">R$ 19,40</p>
+        </div>
+        <RouteLine steps={DIA_EXEMPLO} />
+      </div>
+
+      <ul className="mt-10 grid gap-4 sm:grid-cols-3">
+        {[
+          { titulo: 'Preço uma vez só', texto: 'Cadastre a tarifa e reaproveite. No reajuste, o valor antigo vira histórico.' },
+          { titulo: 'Cartão certo', texto: 'Ônibus no Jaé, barca no Rio Card — e dá para trocar quando a linha fugir da regra.' },
+          { titulo: 'PDF no fim', texto: 'Escolha o período, confira na tela e baixe pronto para o financeiro.' },
+        ].map((item) => (
+          <li key={item.titulo} className="border-t-2 border-ink pt-3">
+            <p className="letreiro text-xs text-ink">{item.titulo}</p>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">{item.texto}</p>
+          </li>
+        ))}
       </ul>
 
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
           href="/auth/login"
-          className="rounded-lg bg-brand-600 px-5 py-3 font-medium text-white transition hover:bg-brand-700"
+          className="letreiro rounded-lg bg-ink px-6 py-3 text-paper transition hover:bg-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           Entrar
         </Link>
         <Link
           href="/auth/signup"
-          className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-medium text-slate-700 transition hover:bg-slate-100"
+          className="letreiro rounded-lg border border-line bg-surface px-6 py-3 text-ink transition hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           Criar conta
         </Link>

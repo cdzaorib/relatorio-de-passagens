@@ -28,7 +28,7 @@ export function SelectField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={selectId} className="text-sm font-medium text-slate-700">
+      <label htmlFor={selectId} className="letreiro text-xs text-muted">
         {label}
       </label>
 
@@ -38,10 +38,10 @@ export function SelectField({
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={messageId}
-        className={`w-full rounded-lg border bg-white px-3 py-2.5 text-slate-900 shadow-xs outline-none transition ${
+        className={`w-full appearance-none rounded-lg border bg-surface bg-[url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="%235b6b72" stroke-width="1.5"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>')] bg-[length:12px] bg-[position:right_0.85rem_center] bg-no-repeat px-3 py-2.5 pr-9 text-ink outline-none transition ${
           error
-            ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-            : 'border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100'
+            ? 'border-alerta focus:ring-2 focus:ring-alerta/20'
+            : 'border-line focus:border-barca focus:ring-2 focus:ring-barca/15'
         } ${className}`}
       >
         {options.map((option) => (
@@ -52,7 +52,7 @@ export function SelectField({
       </select>
 
       {error || hint ? (
-        <p id={messageId} className={`text-xs ${error ? 'text-red-700' : 'text-slate-500'}`}>
+        <p id={messageId} className={`text-xs ${error ? 'text-alerta' : 'text-muted'}`}>
           {error ?? hint}
         </p>
       ) : null}

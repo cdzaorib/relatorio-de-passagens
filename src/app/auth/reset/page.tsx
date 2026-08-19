@@ -20,7 +20,7 @@ export default async function ResetPasswordPage() {
   if (!user) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-slate-900">Link expirado</h1>
+        <h1 className="letreiro text-2xl text-ink">Link expirado</h1>
 
         <Alert variant="error">
           Esse link de redefinição não vale mais. Cada link funciona uma vez só e
@@ -29,7 +29,7 @@ export default async function ResetPasswordPage() {
 
         <Link
           href="/auth/forgot"
-          className="inline-block rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700"
+          className="inline-block rounded-lg bg-ink px-4 py-2.5 font-medium text-white transition hover:bg-ink-soft"
         >
           Pedir um novo link
         </Link>
@@ -40,9 +40,9 @@ export default async function ResetPasswordPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">Nova senha</h1>
-        <p className="text-sm text-slate-600">
-          Escolha a senha da conta <strong className="text-slate-800">{user.email}</strong>.
+        <h1 className="letreiro text-2xl text-ink">Nova senha</h1>
+        <p className="text-sm leading-relaxed text-muted">
+          Escolha a senha da conta <strong className="text-ink">{user.email}</strong>.
         </p>
       </div>
 

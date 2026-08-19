@@ -9,17 +9,17 @@ export default function SignupPage() {
   return (
     <div className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">Criar conta</h1>
-        <p className="text-sm text-slate-600">
+        <h1 className="letreiro text-2xl text-ink">Criar conta</h1>
+        <p className="text-sm leading-relaxed text-muted">
           Leva um minuto. Seus dados ficam só com você.
         </p>
       </div>
 
       <SignupForm />
 
-      <p className="text-sm text-slate-600">
+      <p className="text-sm leading-relaxed text-muted">
         Já tem conta?{' '}
-        <Link href="/auth/login" className="font-medium text-brand-600 hover:text-brand-700">
+        <Link href="/auth/login" className="font-medium text-barca hover:text-barca/80">
           Entrar
         </Link>
       </p>

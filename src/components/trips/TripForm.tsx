@@ -205,15 +205,15 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
       </div>
 
       {!isEditing ? (
-        <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <label className="flex items-start gap-3 rounded-lg border border-line bg-paper p-4">
           <input
             type="checkbox"
             name="round_trip"
             defaultChecked
-            className="mt-0.5 size-4 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
+            className="mt-0.5 size-4 rounded border-line text-barca focus:ring-barca"
           />
-          <span className="text-sm text-slate-700">
-            <strong className="font-medium text-slate-900">
+          <span className="text-sm text-ink-soft">
+            <strong className="font-medium text-ink">
               Voltou para o mesmo local de início?
             </strong>
             <br />
@@ -232,7 +232,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100"
+            className="rounded-lg border border-line px-4 py-2.5 font-medium text-ink-soft transition hover:bg-paper"
           >
             Cancelar
           </button>

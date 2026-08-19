@@ -1,32 +1,26 @@
-/**
- * Blocos de conteúdo do app. Antes cada página repetia as mesmas classes de
- * borda e espaçamento na mão; agora o cartão é uma peça só.
- */
+/** Blocos de conteúdo: superfície branca sobre o papel, borda fina, sem sombra pesada. */
 
 type CardProps = React.ComponentProps<'section'> & {
-  /** Destaca o cartão principal da tela. */
   tone?: 'default' | 'accent'
 }
 
 export function Card({ tone = 'default', className = '', ...props }: CardProps) {
   const tones = {
-    default: 'border-slate-200 bg-white',
-    accent: 'border-brand-100 bg-brand-50/40',
+    default: 'border-line bg-surface',
+    accent: 'border-barca/25 bg-barca-soft',
   }
 
-  return (
-    <section className={`rounded-xl border p-6 ${tones[tone]} ${className}`} {...props} />
-  )
+  return <section className={`rounded-xl border p-5 sm:p-6 ${tones[tone]} ${className}`} {...props} />
 }
 
 export function CardHeader({ className = '', ...props }: React.ComponentProps<'div'>) {
-  return <div className={`mb-5 flex flex-col gap-1 ${className}`} {...props} />
+  return <div className={`mb-5 flex flex-col gap-1.5 ${className}`} {...props} />
 }
 
 export function CardTitle({ className = '', ...props }: React.ComponentProps<'h2'>) {
-  return <h2 className={`font-semibold text-slate-900 ${className}`} {...props} />
+  return <h2 className={`letreiro text-lg text-ink ${className}`} {...props} />
 }
 
 export function CardDescription({ className = '', ...props }: React.ComponentProps<'p'>) {
-  return <p className={`text-sm leading-relaxed text-slate-600 ${className}`} {...props} />
+  return <p className={`text-sm leading-relaxed text-muted ${className}`} {...props} />
 }

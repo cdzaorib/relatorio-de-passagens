@@ -30,8 +30,8 @@ export default async function LocaisPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">Locais</h1>
-        <p className="text-slate-600">
+        <h1 className="letreiro text-3xl leading-none text-ink">Locais</h1>
+        <p className="text-muted">
           Um local guarda para onde você vai e como chega lá. Depois, é só
           escolher o local e a data para lançar o dia inteiro.
         </p>

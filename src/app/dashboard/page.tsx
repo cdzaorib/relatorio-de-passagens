@@ -44,18 +44,16 @@ export default async function DashboardPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-8">
-      <div className="no-print flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-slate-900">Relatório</h1>
-          <p className="text-slate-600">
-            Escolha o período e confira antes de gerar o PDF.
-          </p>
+      <div className="no-print flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="letreiro text-3xl leading-none text-ink sm:text-4xl">Relatório</h1>
+          <p className="mt-2 text-muted">Confira o período e baixe o PDF.</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <Link
             href="/dashboard/trips"
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100"
+            className="letreiro rounded-lg border border-line bg-surface px-4 py-2.5 text-sm text-ink transition hover:bg-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Lançar trechos
           </Link>
@@ -63,13 +61,13 @@ export default async function DashboardPage({ searchParams }: PageProps) {
           {trips.length > 0 ? (
             <a
               href={`/dashboard/relatorio/pdf${periodQuery(period)}`}
-              className="rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700"
+              className="letreiro rounded-lg bg-ink px-4 py-2.5 text-sm text-paper transition hover:bg-ink-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Baixar PDF
             </a>
           ) : (
             <span
-              className="cursor-not-allowed rounded-lg bg-slate-200 px-4 py-2.5 font-medium text-slate-500"
+              className="letreiro cursor-not-allowed rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-muted"
               title="Lance ao menos um trecho no período para gerar o PDF."
             >
               Baixar PDF

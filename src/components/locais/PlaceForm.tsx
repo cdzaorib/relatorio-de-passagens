@@ -145,17 +145,17 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
 
       <div className="space-y-4">
         <div>
-          <h3 className="font-medium text-slate-900">Trechos da ida</h3>
-          <p className="text-sm text-slate-600">
+          <h3 className="font-medium text-ink">Trechos da ida</h3>
+          <p className="text-sm text-muted">
             Na ordem em que você pega. A volta é gerada espelhada na hora do
             lançamento — não precisa cadastrar.
           </p>
         </div>
 
         {legs.map((leg, index) => (
-          <div key={index} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div key={index} className="rounded-lg border border-line bg-paper p-4">
             <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-medium text-slate-700">
+              <span className="text-sm font-medium text-ink-soft">
                 {index + 1}º trecho
               </span>
               {legs.length > 1 ? (
@@ -164,7 +164,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
                   onClick={() =>
                     setLegs((current) => current.filter((_item, position) => position !== index))
                   }
-                  className="text-sm font-medium text-slate-500 transition hover:text-red-700"
+                  className="text-sm font-medium text-muted transition hover:text-alerta"
                 >
                   Remover
                 </button>
@@ -252,7 +252,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
         <button
           type="button"
           onClick={() => setLegs((current) => [...current, emptyLeg()])}
-          className="rounded-lg border border-dashed border-slate-300 px-4 py-2.5 text-sm font-medium text-slate-600 transition hover:border-brand-500 hover:text-brand-700"
+          className="rounded-lg border border-dashed border-line px-4 py-2.5 text-sm font-medium text-muted transition hover:border-barca hover:text-barca/80"
         >
           + Adicionar trecho
         </button>
@@ -267,7 +267,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 transition hover:bg-slate-100"
+            className="rounded-lg border border-line px-4 py-2.5 font-medium text-ink-soft transition hover:bg-paper"
           >
             Cancelar
           </button>

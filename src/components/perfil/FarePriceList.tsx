@@ -12,7 +12,7 @@ export function FarePriceList({ farePrices }: { farePrices: FarePrice[] }) {
 
   if (farePrices.length === 0) {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-muted">
         Nenhuma passagem cadastrada ainda. Cadastre uma abaixo e ela fica
         disponível toda vez que você lançar um trecho.
       </p>
@@ -20,12 +20,12 @@ export function FarePriceList({ farePrices }: { farePrices: FarePrice[] }) {
   }
 
   return (
-    <ul className="divide-y divide-slate-200">
+    <ul className="divide-y divide-line">
       {farePrices.map((farePrice) => (
         <li key={farePrice.id} className="py-4 first:pt-0 last:pb-0">
           {editingId === farePrice.id ? (
-            <div className="rounded-lg border border-brand-100 bg-brand-50/50 p-4">
-              <p className="mb-4 text-sm font-medium text-slate-700">
+            <div className="rounded-lg border border-barca/25 bg-barca-soft p-4">
+              <p className="mb-4 text-sm font-medium text-ink-soft">
                 Editando {farePrice.label}
               </p>
               <FarePriceForm
@@ -37,21 +37,21 @@ export function FarePriceList({ farePrices }: { farePrices: FarePrice[] }) {
           ) : (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-medium text-slate-900">{farePrice.label}</p>
-                <p className="text-sm text-slate-500">
+                <p className="font-medium text-ink">{farePrice.label}</p>
+                <p className="text-sm text-muted">
                   {TRANSPORT_LABELS[farePrice.transport]} · {CARD_LABELS[farePrice.card]}
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="font-semibold text-slate-900 tabular-nums">
+                <span className="font-semibold text-ink dados">
                   {formatBRL(Number(farePrice.value))}
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setEditingId(farePrice.id)}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink-soft transition hover:bg-paper"
                 >
                   Editar
                 </button>
@@ -71,7 +71,7 @@ export function FarePriceList({ farePrices }: { farePrices: FarePrice[] }) {
                   <input type="hidden" name="group_id" value={farePrice.group_id} />
                   <button
                     type="submit"
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-700"
+                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-alerta-soft hover:text-alerta"
                   >
                     Arquivar
                   </button>

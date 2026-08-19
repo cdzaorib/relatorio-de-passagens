@@ -6,23 +6,20 @@ type TextFieldProps = React.ComponentProps<'input'> & {
   label: string
   name: string
   hint?: string
-  /** Mensagem do campo vinda da validação do servidor. */
   error?: string | null
   /** Liga o autocomplete nativo do navegador com valores já usados. */
   suggestions?: string[]
+  /** Valores numéricos ficam na monoespaçada. */
+  data?: boolean
 }
 
-/**
- * Campo de texto com rótulo, dica, autocomplete e estado de erro.
- * O erro marca o input com aria-invalid e substitui a dica, para o leitor de
- * tela e a pessoa que enxerga receberem a mesma informação no mesmo lugar.
- */
 export function TextField({
   label,
   name,
   hint,
   error,
   suggestions,
+  data = false,
   className = '',
   ...props
 }: TextFieldProps) {
@@ -33,7 +30,7 @@ export function TextField({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-sm font-medium text-slate-700">
+      <label htmlFor={inputId} className="letreiro text-xs text-muted">
         {label}
       </label>
 
@@ -44,10 +41,12 @@ export function TextField({
         list={listId}
         aria-invalid={error ? true : undefined}
         aria-describedby={messageId}
-        className={`w-full rounded-lg border bg-white px-3 py-2.5 text-slate-900 shadow-xs outline-none transition placeholder:text-slate-400 disabled:bg-slate-100 ${
+        className={`w-full rounded-lg border bg-surface px-3 py-2.5 text-ink outline-none transition placeholder:text-muted/50 disabled:bg-paper ${
+          data ? 'dados' : ''
+        } ${
           error
-            ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-            : 'border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100'
+            ? 'border-alerta focus:ring-2 focus:ring-alerta/20'
+            : 'border-line focus:border-barca focus:ring-2 focus:ring-barca/15'
         } ${className}`}
       />
 
@@ -60,7 +59,7 @@ export function TextField({
       ) : null}
 
       {error || hint ? (
-        <p id={messageId} className={`text-xs ${error ? 'text-red-700' : 'text-slate-500'}`}>
+        <p id={messageId} className={`text-xs ${error ? 'text-alerta' : 'text-muted'}`}>
           {error ?? hint}
         </p>
       ) : null}

@@ -38,8 +38,8 @@ export default async function PerfilPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-slate-900">Perfil</h1>
-        <p className="text-slate-600">
+        <h1 className="letreiro text-3xl leading-none text-ink">Perfil</h1>
+        <p className="text-muted">
           Seus dados do cabeçalho e os valores das passagens que você usa.
         </p>
       </div>

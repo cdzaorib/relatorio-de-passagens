@@ -4,9 +4,11 @@ import { useState } from 'react'
 
 import { deleteTrip, deleteTripsOfDay } from '@/app/dashboard/trips/actions'
 import { TripForm } from '@/components/trips/TripForm'
+import { CardTag } from '@/components/ui/CardTag'
+import { RouteLine } from '@/components/ui/RouteLine'
 import { formatBRL, formatDate } from '@/lib/format'
 import type { Suggestions } from '@/lib/suggestions'
-import { CARD_LABELS, TRANSPORT_LABELS, type FarePrice, type Trip } from '@/types'
+import { TRANSPORT_LABELS, type FarePrice, type Trip } from '@/types'
 
 type TripsTableProps = {
   trips: Trip[]
@@ -33,7 +35,7 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
 
   if (trips.length === 0) {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-muted">
         Nenhum trecho lançado ainda neste intervalo.
       </p>
     )
@@ -49,9 +51,9 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
         return (
           <div key={date}>
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="font-semibold text-slate-900">{formatDate(date)}</h3>
+              <h3 className="letreiro dados text-base text-ink">{formatDate(date)}</h3>
               <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-600 tabular-nums">
+                <span className="text-sm text-muted dados">
                   {dayTrips.length} {dayTrips.length === 1 ? 'trecho' : 'trechos'} ·{' '}
                   {formatBRL(dayTotal)}
                 </span>
@@ -70,7 +72,7 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                   <input type="hidden" name="date" value={date} />
                   <button
                     type="submit"
-                    className="text-sm font-medium text-slate-500 transition hover:text-red-700"
+                    className="text-sm font-medium text-muted transition hover:text-alerta"
                   >
                     Excluir o dia
                   </button>
@@ -78,10 +80,22 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
               </div>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="mb-3 rounded-lg border border-line bg-surface px-4 py-3">
+              <RouteLine
+                showFares={false}
+                steps={dayTrips.map((trip) => ({
+                  origin: trip.origin,
+                  destination: trip.destination,
+                  transport: trip.transport,
+                  line: trip.line,
+                }))}
+              />
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-line bg-surface">
               <table className="w-full min-w-[46rem] text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-left text-xs tracking-wide text-slate-500 uppercase">
+                  <tr className="border-b border-line text-left text-xs tracking-wide text-muted uppercase">
                     <th className="px-4 py-3 font-medium">Origem</th>
                     <th className="px-4 py-3 font-medium">Destino</th>
                     <th className="px-4 py-3 font-medium">Cliente</th>
@@ -92,11 +106,11 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-line">
                   {dayTrips.map((trip) =>
                     editingId === trip.id ? (
                       <tr key={trip.id}>
-                        <td colSpan={8} className="bg-brand-50/40 px-4 py-5">
+                        <td colSpan={8} className="bg-barca-soft px-4 py-5">
                           <TripForm
                             trip={trip}
                             fares={fares}
@@ -108,14 +122,16 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                         </td>
                       </tr>
                     ) : (
-                      <tr key={trip.id} className="text-slate-700">
+                      <tr key={trip.id} className="text-ink-soft">
                         <td className="px-4 py-3">{trip.origin}</td>
                         <td className="px-4 py-3">{trip.destination}</td>
                         <td className="px-4 py-3">{trip.client}</td>
                         <td className="px-4 py-3">{TRANSPORT_LABELS[trip.transport]}</td>
                         <td className="px-4 py-3">{trip.line || '—'}</td>
-                        <td className="px-4 py-3">{CARD_LABELS[trip.card]}</td>
-                        <td className="px-4 py-3 text-right font-medium tabular-nums">
+                        <td className="px-4 py-3">
+                          <CardTag card={trip.card} />
+                        </td>
+                        <td className="px-4 py-3 text-right font-medium dados">
                           {formatBRL(Number(trip.value))}
                         </td>
                         <td className="px-4 py-3">
@@ -123,7 +139,7 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                             <button
                               type="button"
                               onClick={() => setEditingId(trip.id)}
-                              className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                              className="rounded-lg border border-line px-2.5 py-1 text-xs font-medium text-ink-soft transition hover:bg-paper"
                             >
                               Editar
                             </button>
@@ -138,7 +154,7 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                               <input type="hidden" name="id" value={trip.id} />
                               <button
                                 type="submit"
-                                className="rounded-lg px-2.5 py-1 text-xs font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-700"
+                                className="rounded-lg px-2.5 py-1 text-xs font-medium text-muted transition hover:bg-alerta-soft hover:text-alerta"
                               >
                                 Excluir
                               </button>

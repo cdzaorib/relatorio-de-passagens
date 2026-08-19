@@ -1,13 +1,33 @@
 @import 'tailwindcss';
 
-/* Paleta e tokens do app. */
+/*
+ * Identidade visual: deslocamento urbano no Rio — ônibus e barca.
+ * A cor carrega informação, não enfeite: teal é barca/RIO CARD, ocre é
+ * ônibus/JAÉ, e o azul-petróleo fica reservado para o sistema e as ações,
+ * para nenhum botão ser confundido com um modal de transporte.
+ */
 @theme {
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --color-ink: #10222e;
+  --color-ink-soft: #2a4351;
+  --color-paper: #f1f3f1;
+  --color-surface: #ffffff;
+  --color-line: #d7ddda;
+  --color-muted: #5b6b72;
+
+  --color-barca: #0b7285;
+  --color-barca-soft: #e2eff1;
+  --color-onibus: #c2830b;
+  --color-onibus-ink: #774d05;
+  --color-onibus-soft: #f8f0dc;
+
+  --color-alerta: #99271f;
+  --color-alerta-soft: #fbeceb;
+  --color-ok: #1c6b43;
+  --color-ok-soft: #e6f2ec;
+
+  --font-display: var(--fonte-condensada), 'Barlow Condensed', system-ui, sans-serif;
+  --font-sans: var(--fonte-corpo), 'Barlow', system-ui, sans-serif;
+  --font-mono: var(--fonte-dados), 'IBM Plex Mono', ui-monospace, monospace;
 }
 
 html,
@@ -16,12 +36,40 @@ body {
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-paper text-ink antialiased;
+  font-family: var(--font-sans);
 }
 
-/* Some tudo que não for o relatório na hora de imprimir (usado na F6). */
+/* Rótulo de letreiro: caixa alta condensada com respiro entre letras. */
+.letreiro {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Números que precisam alinhar em coluna: dinheiro, datas, linhas. */
+.dados {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Some tudo que não for o relatório na hora de imprimir. */
 @media print {
   .no-print {
     display: none !important;
+  }
+
+  body {
+    background: #fff;
   }
 }

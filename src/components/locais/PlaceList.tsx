@@ -4,9 +4,10 @@ import { useState } from 'react'
 
 import { deletePlace } from '@/app/dashboard/locais/actions'
 import { PlaceForm } from '@/components/locais/PlaceForm'
+import { RouteLine } from '@/components/ui/RouteLine'
 import { formatBRL } from '@/lib/format'
 import type { Suggestions } from '@/lib/suggestions'
-import { TRANSPORT_LABELS, type FarePrice, type PlaceWithLegs } from '@/types'
+import { type FarePrice, type PlaceWithLegs } from '@/types'
 
 type PlaceListProps = {
   places: PlaceWithLegs[]
@@ -19,7 +20,7 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
 
   if (places.length === 0) {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-muted">
         Nenhum local cadastrado ainda. Cadastre o primeiro abaixo.
       </p>
     )
@@ -32,8 +33,8 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
 
         if (editingId === place.id) {
           return (
-            <li key={place.id} className="rounded-xl border border-brand-100 bg-brand-50/40 p-5">
-              <p className="mb-4 text-sm font-medium text-slate-700">Editando {place.name}</p>
+            <li key={place.id} className="rounded-xl border border-barca/25 bg-barca-soft p-5">
+              <p className="mb-4 text-sm font-medium text-ink-soft">Editando {place.name}</p>
               <PlaceForm
                 place={place}
                 fares={fares}
@@ -46,13 +47,13 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
         }
 
         return (
-          <li key={place.id} className="rounded-xl border border-slate-200 bg-white p-5">
+          <li key={place.id} className="rounded-xl border border-line bg-surface p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className="font-semibold text-slate-900">{place.name}</h3>
-                <p className="text-sm text-slate-500">
+                <h3 className="letreiro text-lg text-ink">{place.name}</h3>
+                <p className="text-sm text-muted">
                   {place.legs.length} {place.legs.length === 1 ? 'trecho' : 'trechos'} de ida ·
-                  ida e volta sai por {formatBRL(total * 2)}
+                  ida e volta sai por <span className="dados">{formatBRL(total * 2)}</span>
                 </p>
               </div>
 
@@ -60,7 +61,7 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
                 <button
                   type="button"
                   onClick={() => setEditingId(place.id)}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100"
+                  className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink-soft transition hover:bg-paper"
                 >
                   Editar
                 </button>
@@ -79,7 +80,7 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
                   <input type="hidden" name="id" value={place.id} />
                   <button
                     type="submit"
-                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-700"
+                    className="rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition hover:bg-alerta-soft hover:text-alerta"
                   >
                     Excluir
                   </button>
@@ -87,20 +88,17 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
               </div>
             </div>
 
-            <ol className="mt-4 space-y-1.5 text-sm text-slate-600">
-              {place.legs.map((leg, index) => (
-                <li key={leg.id} className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="text-xs text-slate-400 tabular-nums">{index + 1}.</span>
-                  <span className="text-slate-800">
-                    {leg.origin} → {leg.destination}
-                  </span>
-                  <span className="text-slate-500">
-                    {TRANSPORT_LABELS[leg.transport]}
-                    {leg.line ? ` ${leg.line}` : ''} · {formatBRL(Number(leg.value))}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <div className="mt-4 border-t border-line pt-4">
+              <RouteLine
+                steps={place.legs.map((leg) => ({
+                  origin: leg.origin,
+                  destination: leg.destination,
+                  transport: leg.transport,
+                  line: leg.line,
+                  value: Number(leg.value),
+                }))}
+              />
+            </div>
           </li>
         )
       })}
