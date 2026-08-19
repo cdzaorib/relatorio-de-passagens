@@ -37,7 +37,9 @@ export default async function TripsPage() {
       .select('*')
       .gte('date', since)
       .order('date', { ascending: false })
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: true })
+      // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
+      .order('leg_order', { ascending: true }),
     supabase.from('places').select('*').eq('active', true).order('name'),
     supabase.from('place_legs').select('*').order('position', { ascending: true }),
     getSuggestions(supabase),

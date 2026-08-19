@@ -38,6 +38,7 @@ período escolhido fica num cookie.
 | --- | --- |
 | Nenhum componente de cliente fala com o Supabase | Permite o cookie de sessão ser `httpOnly`. Um cliente de browser quebraria isso |
 | `trips.value` é cópia, não referência | Reajuste futuro não pode alterar relatório já entregue |
+| `trips.leg_order` existe apesar de haver `created_at` | `now()` é o horário da transação: os quatro trechos de um dia nascem com `created_at` idêntico e a ordem da ida e da volta se perderia |
 | Identidade dos trechos no formulário é o índice | UUID gerado na renderização diverge entre servidor e cliente e quebra a hidratação |
 | Data do formulário é campo controlado | `form.reset()` a devolveria para hoje no meio de um lançamento em sequência |
 | `todayISO()` fixa o fuso em `America/Sao_Paulo` | O servidor roda em UTC e viraria o dia depois das 21h |

@@ -296,6 +296,10 @@ Detalhes que valem lembrar:
   novo registro é criado, preservando o histórico.
 - **`trips.value` é uma cópia.** Um reajuste futuro não altera relatórios já
   fechados.
+- **`trips.leg_order` guarda a ordem do trecho.** O `now()` do Postgres é o
+  horário da transação, então os quatro trechos de um dia nascem com
+  `created_at` idêntico; sem a coluna, a ordem da ida e da volta se perde e o
+  relatório sai embaralhado.
 - **Local salvo lança o dia inteiro.** Você cadastra o `HCNI` uma vez dizendo
   que a ida são dois ônibus; no dia, escolhe o local e a data e o app grava os
   quatro trechos — a volta sai espelhada da ida (ordem invertida, origem e

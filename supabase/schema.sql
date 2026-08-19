@@ -92,15 +92,22 @@ create table if not exists public.trips (
   line        text,                               -- LINHA (só faz sentido em ônibus)
   card        public.card_type not null,          -- cartão que pagou o trecho
   value       numeric(10, 2) not null check (value >= 0),
+  -- Ordem do trecho dentro do lançamento: 0 é o primeiro da ida.
+  leg_order   smallint not null default 0,
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
 
 comment on table  public.trips is 'Trechos de deslocamento; cada linha vira uma linha da tabela do relatório.';
 comment on column public.trips.line is 'Número da linha do ônibus. Fica nulo/vazio em barca.';
+comment on column public.trips.leg_order is
+  'Ordem dentro do lançamento. now() é o horário da transação, então os quatro trechos de um dia nascem com created_at idêntico; sem esta coluna a ordem da ida e da volta se perde.';
+
+-- Bancos criados antes desta coluna.
+alter table public.trips add column if not exists leg_order smallint not null default 0;
 
 create index if not exists trips_user_id_idx        on public.trips (user_id);
-create index if not exists trips_user_date_idx      on public.trips (user_id, date);
+create index if not exists trips_user_date_idx      on public.trips (user_id, date, created_at, leg_order);
 -- Autocomplete de bairros e de cliente usa estes índices.
 create index if not exists trips_user_origin_idx    on public.trips (user_id, origin);
 create index if not exists trips_user_dest_idx      on public.trips (user_id, destination);

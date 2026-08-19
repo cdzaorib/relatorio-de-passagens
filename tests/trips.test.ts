@@ -103,6 +103,51 @@ describe('montagem do dia', () => {
   })
 })
 
+describe('ordem gravada no lançamento', () => {
+  test('cada trecho recebe sua posição, começando em zero', () => {
+    const trips = legsToTrips(buildDayLegs(ida, true), 'u1', '2026-07-01')
+
+    assert.deepEqual(
+      trips.map((t) => t.leg_order),
+      [0, 1, 2, 3],
+    )
+  })
+
+  test('a ordem gravada reconstrói ida e volta na sequência certa', () => {
+    const trips = legsToTrips(buildDayLegs(ida, true), 'u1', '2026-07-01')
+
+    // O banco devolve em ordem arbitrária quando created_at empata; ordenar
+    // por leg_order tem de trazer de volta a sequência do lançamento.
+    const embaralhado = [trips[3], trips[1], trips[0], trips[2]]
+    const reordenado = [...embaralhado].sort((a, b) => a.leg_order! - b.leg_order!)
+
+    assert.deepEqual(
+      reordenado.map((t) => [t.origin, t.destination, t.transport]),
+      [
+        ['Bananal', 'Cocotá', 'onibus'],
+        ['Cocotá', 'Praça XV', 'barca'],
+        ['Praça XV', 'Cocotá', 'barca'],
+        ['Cocotá', 'Bananal', 'onibus'],
+      ],
+    )
+  })
+
+  test('a volta nunca vem antes da ida depois de reordenar', () => {
+    const trips = legsToTrips(buildDayLegs(ida, true), 'u1', '2026-07-01')
+    const ordenado = [...trips].sort((a, b) => a.leg_order! - b.leg_order!)
+
+    const primeiraVolta = ordenado.findIndex((t) => t.client === 'Residência')
+    const ultimaIda = ordenado.map((t) => t.client !== 'Residência').lastIndexOf(true)
+
+    assert.ok(ultimaIda < primeiraVolta, 'a volta apareceu no meio da ida')
+  })
+
+  test('trecho avulso sem volta recebe posição zero', () => {
+    const trips = legsToTrips([ida[0]], 'u1', '2026-07-01')
+    assert.deepEqual(trips.map((t) => t.leg_order), [0])
+  })
+})
+
 describe('conversão para registro do banco', () => {
   test('carimba usuário e data em todos os trechos', () => {
     const trips = legsToTrips(ida, 'usuario-1', '2026-07-01')

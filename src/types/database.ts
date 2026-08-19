@@ -85,6 +85,7 @@ export interface Database {
           line: string | null
           card: CardType
           value: number
+          leg_order: number
           created_at: string
           updated_at: string
         }
@@ -99,6 +100,7 @@ export interface Database {
           line?: string | null
           card: CardType
           value: number
+          leg_order?: number
           created_at?: string
           updated_at?: string
         }
@@ -113,6 +115,7 @@ export interface Database {
           line?: string | null
           card?: CardType
           value?: number
+          leg_order?: number
           created_at?: string
           updated_at?: string
         }

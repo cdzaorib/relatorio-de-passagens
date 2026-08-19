@@ -35,7 +35,9 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       .gte('date', period.from)
       .lte('date', period.to)
       .order('date', { ascending: true })
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: true })
+      // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
+      .order('leg_order', { ascending: true }),
   ])
 
   const profile = profileResult.data

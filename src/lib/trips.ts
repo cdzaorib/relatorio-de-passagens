@@ -35,9 +35,17 @@ export function buildDayLegs(legs: LegDraft[], includeReturn: boolean): LegDraft
   return includeReturn ? [...legs, ...mirrorLegs(legs)] : [...legs]
 }
 
-/** Converte os trechos em registros prontos para o insert. */
+/**
+ * Converte os trechos em registros prontos para o insert.
+ *
+ * `leg_order` grava a posição de cada trecho. Sem ela a ordem se perderia:
+ * `now()` no Postgres é o horário da transação, então os quatro trechos de um
+ * dia nascem com `created_at` idêntico e o banco devolve em ordem arbitrária —
+ * a volta aparecia embaralhada com a ida.
+ */
 export function legsToTrips(legs: LegDraft[], userId: string, date: string): TripInsert[] {
-  return legs.map((leg) => ({
+  return legs.map((leg, ordem) => ({
+    leg_order: ordem,
     user_id: userId,
     date,
     origin: leg.origin,

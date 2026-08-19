@@ -41,7 +41,9 @@ export async function GET(request: NextRequest) {
       .gte('date', period.from)
       .lte('date', period.to)
       .order('date', { ascending: true })
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: true })
+      // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
+      .order('leg_order', { ascending: true }),
   ])
 
   const trips = tripsResult.data ?? []
