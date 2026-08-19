@@ -7,7 +7,7 @@ type CardProps = React.ComponentProps<'section'> & {
 export function Card({ tone = 'default', className = '', ...props }: CardProps) {
   const tones = {
     default: 'border-line bg-surface',
-    accent: 'border-barca/25 bg-barca-soft',
+    accent: 'border-marca/35 bg-barca-soft',
   }
 
   return <section className={`rounded-xl border p-5 sm:p-6 ${tones[tone]} ${className}`} {...props} />

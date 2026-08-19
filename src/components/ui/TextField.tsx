@@ -46,7 +46,7 @@ export function TextField({
         } ${
           error
             ? 'border-alerta focus:ring-2 focus:ring-alerta/20'
-            : 'border-line focus:border-barca focus:ring-2 focus:ring-barca/15'
+            : 'border-line focus:border-marca focus:ring-2 focus:ring-marca/20'
         } ${className}`}
       />
 

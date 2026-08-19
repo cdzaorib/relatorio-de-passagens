@@ -252,7 +252,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
         <button
           type="button"
           onClick={() => setLegs((current) => [...current, emptyLeg()])}
-          className="rounded-lg border border-dashed border-line px-4 py-2.5 text-sm font-medium text-muted transition hover:border-barca hover:text-barca/80"
+          className="rounded-lg border border-dashed border-line px-4 py-2.5 text-sm font-medium text-muted transition hover:border-marca hover:text-marca"
         >
           + Adicionar trecho
         </button>

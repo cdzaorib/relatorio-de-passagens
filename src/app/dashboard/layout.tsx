@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen">
-      <header className="no-print bg-ink text-paper">
+      <header className="no-print border-b-2 border-marca bg-ink text-paper">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 py-3">
             <Link href="/dashboard" className="letreiro text-base tracking-[0.14em]">

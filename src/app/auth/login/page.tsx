@@ -32,13 +32,13 @@ export default async function LoginPage({ searchParams }: PageProps) {
 
       <div className="space-y-2 text-sm text-muted">
         <p>
-          <Link href="/auth/forgot" className="font-medium text-barca hover:text-barca/80">
+          <Link href="/auth/forgot" className="font-medium text-marca-texto hover:text-marca">
             Esqueci minha senha
           </Link>
         </p>
         <p>
           Ainda não tem conta?{' '}
-          <Link href="/auth/signup" className="font-medium text-barca hover:text-barca/80">
+          <Link href="/auth/signup" className="font-medium text-marca-texto hover:text-marca">
             Criar conta
           </Link>
         </p>

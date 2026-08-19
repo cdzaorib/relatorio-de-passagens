@@ -95,7 +95,7 @@ export function ReportPreview({ profile, period, trips, totals }: ReportPreviewP
           {/* Rodapé fora da tabela: não rola junto e continua legível no celular. */}
           <dl className="border-t-2 border-ink">
             <div className="flex items-center justify-between border-b border-line px-5 py-2">
-              <dt className="letreiro text-xs text-barca">Total Rio Card</dt>
+              <dt className="letreiro text-xs text-marca-texto">Total Rio Card</dt>
               <dd className="dados text-ink">{formatBRL(totals.riocard)}</dd>
             </div>
             <div className="flex items-center justify-between border-b border-line px-5 py-2">

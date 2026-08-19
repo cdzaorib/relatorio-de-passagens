@@ -7,7 +7,7 @@ import { CARD_LABELS, type CardType } from '@/types'
 export function CardTag({ card }: { card: CardType }) {
   const styles =
     card === 'riocard'
-      ? 'border-barca/30 bg-barca-soft text-barca'
+      ? 'border-marca/35 bg-barca-soft text-marca-texto'
       : 'border-onibus/40 bg-onibus-soft text-onibus-ink'
 
   return (

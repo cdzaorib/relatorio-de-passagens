@@ -33,7 +33,7 @@ export function PlaceList({ places, fares, suggestions }: PlaceListProps) {
 
         if (editingId === place.id) {
           return (
-            <li key={place.id} className="rounded-xl border border-barca/25 bg-barca-soft p-5">
+            <li key={place.id} className="rounded-xl border border-marca/35 bg-barca-soft p-5">
               <p className="mb-4 text-sm font-medium text-ink-soft">Editando {place.name}</p>
               <PlaceForm
                 place={place}

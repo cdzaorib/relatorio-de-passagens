@@ -34,7 +34,7 @@ export function RouteLine({
     transport === 'barca' ? 'bg-barca' : 'bg-onibus'
 
   const texto = (transport: TransportType) =>
-    transport === 'barca' ? 'text-barca' : 'text-onibus-ink'
+    transport === 'barca' ? 'text-marca-texto' : 'text-onibus-ink'
 
   return (
     <ol className="flex flex-col sm:flex-row sm:items-start">

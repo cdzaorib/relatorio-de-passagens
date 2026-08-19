@@ -41,7 +41,7 @@ export function SelectField({
         className={`w-full appearance-none rounded-lg border bg-surface bg-[url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" fill="none" stroke="%235b6b72" stroke-width="1.5"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>')] bg-[length:12px] bg-[position:right_0.85rem_center] bg-no-repeat px-3 py-2.5 pr-9 text-ink outline-none transition ${
           error
             ? 'border-alerta focus:ring-2 focus:ring-alerta/20'
-            : 'border-line focus:border-barca focus:ring-2 focus:ring-barca/15'
+            : 'border-line focus:border-marca focus:ring-2 focus:ring-marca/20'
         } ${className}`}
       >
         {options.map((option) => (

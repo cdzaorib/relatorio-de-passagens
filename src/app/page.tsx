@@ -13,7 +13,7 @@ const DIA_EXEMPLO = [
 export default function HomePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-5 py-16 sm:px-6">
-      <p className="letreiro text-xs text-barca">Reembolso de passagem</p>
+      <p className="letreiro text-xs text-marca-texto">Reembolso de passagem</p>
 
       <h1 className="letreiro mt-3 text-5xl leading-[0.95] text-ink sm:text-6xl">
         Quatro trechos,

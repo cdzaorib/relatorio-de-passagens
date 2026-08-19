@@ -74,7 +74,7 @@ export default async function TripsPage() {
             e depois lance o dia com dois cliques.{' '}
             <Link
               href="/dashboard/locais"
-              className="font-medium text-barca hover:text-barca/80"
+              className="font-medium text-marca-texto hover:text-marca"
             >
               Cadastrar um local
             </Link>

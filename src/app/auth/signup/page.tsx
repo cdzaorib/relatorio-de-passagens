@@ -19,7 +19,7 @@ export default function SignupPage() {
 
       <p className="text-sm leading-relaxed text-muted">
         Já tem conta?{' '}
-        <Link href="/auth/login" className="font-medium text-barca hover:text-barca/80">
+        <Link href="/auth/login" className="font-medium text-marca-texto hover:text-marca">
           Entrar
         </Link>
       </p>

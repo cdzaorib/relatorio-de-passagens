@@ -56,7 +56,7 @@ export function PlaceLauncher({ places, today }: { places: PlaceWithLegs[]; toda
           name="round_trip"
           checked={includeReturn}
           onChange={(event) => setIncludeReturn(event.target.checked)}
-          className="size-4 rounded border-line text-barca focus:ring-barca"
+          className="size-4 rounded border-line text-marca-texto focus:ring-barca"
         />
         <span className="text-sm text-ink-soft">Lançar também a volta para casa</span>
       </label>

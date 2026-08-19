@@ -7,15 +7,27 @@
  * para nenhum botão ser confundido com um modal de transporte.
  */
 @theme {
-  --color-ink: #10222e;
-  --color-ink-soft: #2a4351;
-  --color-paper: #f1f3f1;
+  /* Carvão do "tecno" no logo: barra superior, texto e ações. */
+  --color-ink: #262b2d;
+  --color-ink-soft: #3d4548;
+  --color-paper: #f4f6f5;
   --color-surface: #ffffff;
-  --color-line: #d7ddda;
+  --color-line: #dde2e0;
   --color-muted: #5b6b72;
 
-  --color-barca: #0b7285;
-  --color-barca-soft: #e2eff1;
+  /*
+   * Verde da marca, em duas forças. O vivo tem contraste 3.4:1 sobre branco:
+   * serve para traço e título, mas não para texto pequeno — por isso a
+   * versão escura, que passa de 5:1.
+   */
+  --color-marca: #0e9c86;
+  --color-marca-texto: #0a7a69;
+  --color-marca-suave: #e6f4f1;
+
+  /* A barca usa o verde da marca; o RIO CARD acompanha. */
+  --color-barca: #0e9c86;
+  --color-barca-texto: #0a7a69;
+  --color-barca-soft: #e6f4f1;
   --color-onibus: #c2830b;
   --color-onibus-ink: #774d05;
   --color-onibus-soft: #f8f0dc;

@@ -210,7 +210,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
             type="checkbox"
             name="round_trip"
             defaultChecked
-            className="mt-0.5 size-4 rounded border-line text-barca focus:ring-barca"
+            className="mt-0.5 size-4 rounded border-line text-marca-texto focus:ring-barca"
           />
           <span className="text-sm text-ink-soft">
             <strong className="font-medium text-ink">

@@ -10,8 +10,8 @@ export function SummaryCards({ totals }: { totals: ReportTotals }) {
     {
       label: 'Rio Card',
       valor: formatBRL(totals.riocard),
-      classe: 'border-barca/25 bg-barca-soft',
-      cor: 'text-barca',
+      classe: 'border-marca/35 bg-barca-soft',
+      cor: 'text-marca-texto',
     },
     {
       label: 'Jaé',

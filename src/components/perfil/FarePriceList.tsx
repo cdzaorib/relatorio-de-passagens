@@ -24,7 +24,7 @@ export function FarePriceList({ farePrices }: { farePrices: FarePrice[] }) {
       {farePrices.map((farePrice) => (
         <li key={farePrice.id} className="py-4 first:pt-0 last:pb-0">
           {editingId === farePrice.id ? (
-            <div className="rounded-lg border border-barca/25 bg-barca-soft p-4">
+            <div className="rounded-lg border border-marca/35 bg-barca-soft p-4">
               <p className="mb-4 text-sm font-medium text-ink-soft">
                 Editando {farePrice.label}
               </p>
