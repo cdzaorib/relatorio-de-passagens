@@ -1,0 +1,60 @@
+# Guia do projeto
+
+App que substitui a planilha de reembolso de passagem da Tecnoarte. O
+funcionário lança os trechos de ônibus e barca, escolhe o período e baixa o
+PDF que o financeiro já conhece.
+
+## Comandos
+
+```bash
+npm run dev        # desenvolvimento
+npm test           # 76 testes, node:test embutido, ~1s
+npm run build      # produção; roda ESLint e TypeScript junto
+```
+
+Rodar `npm test` e `npm run build` antes de qualquer push. O CI roda os dois.
+
+## O que não pode quebrar
+
+**A regra do espelho** (`src/lib/trips.ts`). A volta é derivada da ida: ordem
+invertida, origem trocada com destino, cliente vira `Residência`. É o que
+poupa metade da digitação e o que os testes protegem primeiro. Mexeu ali,
+rode `npm test`.
+
+**Cartão é escolha, não consequência.** Ônibus sugere JAÉ e barca sugere RIO
+CARD, mas o campo é editável: a linha 143C é ônibus paga no RIO CARD. Nunca
+derive o cartão do transporte na hora de salvar.
+
+**Reajuste não sobrescreve preço.** Editar o valor de uma passagem desativa o
+registro atual e cria outro no mesmo `group_id`. O trecho já lançado guarda
+sua própria cópia do valor, então relatório fechado não muda sozinho.
+
+**Período é livre.** Quinzena é só o padrão de quem nunca escolheu; o último
+período escolhido fica num cookie.
+
+## Decisões que parecem estranhas mas têm motivo
+
+| Decisão | Motivo |
+| --- | --- |
+| Nenhum componente de cliente fala com o Supabase | Permite o cookie de sessão ser `httpOnly`. Um cliente de browser quebraria isso |
+| `trips.value` é cópia, não referência | Reajuste futuro não pode alterar relatório já entregue |
+| Identidade dos trechos no formulário é o índice | UUID gerado na renderização diverge entre servidor e cliente e quebra a hidratação |
+| Data do formulário é campo controlado | `form.reset()` a devolveria para hoje no meio de um lançamento em sequência |
+| `todayISO()` fixa o fuso em `America/Sao_Paulo` | O servidor roda em UTC e viraria o dia depois das 21h |
+| Totais arredondados só no fim | Somar centavos em float acumula `211.09999999999994` |
+| `safeRedirectPath` recusa contrabarra | `/\evil.com` parece interno mas o navegador lê como `//evil.com` |
+| PDF usa `pdf-lib` | JavaScript puro: sem binário nem arquivo de fonte para empacotar na Vercel |
+
+## Estilo
+
+- Comentários em português, explicando **por quê**, não o quê
+- Server Components por padrão; `'use client'` só com estado ou evento
+- Só Tailwind, sem biblioteca de UI. A cor carrega informação: verde da marca
+  para barca e RIO CARD, ocre para ônibus e JAÉ, carvão para sistema e ações
+- Validação devolve todos os erros de uma vez, presos ao campo
+
+## Segredos
+
+Chave nenhuma no repositório, nem no README, nem em comentário. As variáveis
+vivem no `.env.local` (ignorado pelo Git) e nos Environment Variables da
+Vercel. O e-mail do usuário não vai para o HTML — veja `maskEmail`.
