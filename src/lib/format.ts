@@ -14,8 +14,19 @@ export function formatAmountInput(value: number): string {
 }
 
 /**
+ * Ponto seguido de exatamente três dígitos, sem vírgula na frente: '1.234'.
+ * Em português isso é milhar (mil duzentos e trinta e quatro); em inglês é
+ * decimal (um vírgula duzentos e trinta e quatro). Não dá para saber qual.
+ */
+const PONTO_AMBIGUO = /^\d{1,3}(\.\d{3})+$/
+
+/**
  * Lê o valor digitado aceitando os jeitos que a pessoa realmente digita:
  * '4,70', 'R$ 4,70', '4.70', '1.234,56'. Devolve null se não der para ler.
+ *
+ * Recusa o que for ambíguo em vez de chutar: '1.234' pode ser mil e duzentos
+ * ou um e vinte e três, e errar isso em dinheiro é pior do que pedir para a
+ * pessoa escrever de novo com vírgula.
  */
 export function parseAmount(input: string): number | null {
   const cleaned = input
@@ -31,6 +42,7 @@ export function parseAmount(input: string): number | null {
     // Vírgula é o separador decimal; ponto vira separador de milhar.
     normalized = cleaned.replace(/\./g, '').replace(',', '.')
   } else {
+    if (PONTO_AMBIGUO.test(cleaned)) return null
     normalized = cleaned
   }
 

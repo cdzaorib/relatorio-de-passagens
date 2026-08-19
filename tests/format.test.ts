@@ -29,6 +29,20 @@ describe('leitura do valor digitado', () => {
     }
   })
 
+  test('recusa o ponto ambíguo em vez de chutar o valor', () => {
+    // '1.234' é mil duzentos e trinta e quatro em português e um vírgula
+    // duzentos e trinta e quatro em inglês. Errar isso em dinheiro é pior do
+    // que pedir para escrever de novo.
+    for (const entrada of ['1.234', '12.500', '1.234.567']) {
+      assert.equal(parseAmount(entrada), null, `chutou o valor de ${entrada}`)
+    }
+  })
+
+  test('ponto com uma ou duas casas continua sendo decimal', () => {
+    assert.equal(parseAmount('4.7'), 4.7)
+    assert.equal(parseAmount('12.50'), 12.5)
+  })
+
   test('arredonda para os centavos que o banco guarda', () => {
     assert.equal(parseAmount('4,709'), 4.71)
     assert.equal(parseAmount('4,704'), 4.7)

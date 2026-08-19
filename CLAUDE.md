@@ -8,7 +8,7 @@ PDF que o financeiro já conhece.
 
 ```bash
 npm run dev        # desenvolvimento
-npm test           # 76 testes, node:test embutido, ~1s
+npm test           # 90 testes, node:test embutido, ~1s
 npm run build      # produção; roda ESLint e TypeScript junto
 ```
 
@@ -20,6 +20,12 @@ Rodar `npm test` e `npm run build` antes de qualquer push. O CI roda os dois.
 invertida, origem trocada com destino, cliente vira `Residência`. É o que
 poupa metade da digitação e o que os testes protegem primeiro. Mexeu ali,
 rode `npm test`.
+
+**A unidade de lançamento é o dia, não o trecho.** O formulário recebe a ida
+inteira — as duas ou três conduções — e só então espelha. Aceitar um trecho de
+cada vez com a caixa "voltou" marcada produz viagens fechadas em si (vai e
+volta do ônibus, vai e volta da barca) em vez de um percurso contínuo. Tem
+teste de regressão em `tests/trips.test.ts`.
 
 **Cartão é escolha, não consequência.** Ônibus sugere JAÉ e barca sugere RIO
 CARD, mas o campo é editável: a linha 143C é ônibus paga no RIO CARD. Nunca
@@ -42,6 +48,7 @@ período escolhido fica num cookie.
 | Identidade dos trechos no formulário é o índice | UUID gerado na renderização diverge entre servidor e cliente e quebra a hidratação |
 | Data do formulário é campo controlado | `form.reset()` a devolveria para hoje no meio de um lançamento em sequência |
 | `todayISO()` fixa o fuso em `America/Sao_Paulo` | O servidor roda em UTC e viraria o dia depois das 21h |
+| `parseAmount` recusa `1.234` | Milhar em português, decimal em inglês; chutar dinheiro é pior que pedir de novo |
 | Totais arredondados só no fim | Somar centavos em float acumula `211.09999999999994` |
 | `safeRedirectPath` recusa contrabarra | `/\evil.com` parece interno mas o navegador lê como `//evil.com` |
 | PDF usa `pdf-lib` | JavaScript puro: sem binário nem arquivo de fonte para empacotar na Vercel |

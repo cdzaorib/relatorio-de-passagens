@@ -31,7 +31,7 @@ function readFarePriceFields(formData: FormData): FarePriceFields | FieldErrors 
   }
   if (!isTransportType(transport)) errors.transport = 'Escolha o meio de transporte.'
   if (!isCardType(card)) errors.card = 'Escolha o cartão.'
-  if (value === null) errors.value = 'Valor inválido. Escreva assim: 4,70.'
+  if (value === null) errors.value = 'Valor inválido. Use vírgula nos centavos: 4,70.'
   else if (value === 0) errors.value = 'O valor precisa ser maior que zero.'
 
   if (Object.keys(errors).length > 0) return errors

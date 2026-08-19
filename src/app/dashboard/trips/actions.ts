@@ -54,7 +54,7 @@ function readTripFields(formData: FormData): TripFields | FieldErrors {
   if (limiteLinha) errors.line = limiteLinha
   if (!isTransportType(transport)) errors.transport = 'Escolha o meio de transporte.'
   if (!isCardType(card)) errors.card = 'Escolha o cartão.'
-  if (value === null) errors.value = 'Valor inválido. Escreva assim: 4,70.'
+  if (value === null) errors.value = 'Valor inválido. Use vírgula nos centavos: 4,70.'
   else if (value === 0) errors.value = 'O valor precisa ser maior que zero.'
 
   if (Object.keys(errors).length > 0) return errors
@@ -88,30 +88,126 @@ async function requireUser() {
 // Lançar trecho (com volta opcional)
 // ---------------------------------------------------------------------------
 
+/** Um trecho como o formulário manda, antes de validar. */
+type TrechoBruto = {
+  origin?: unknown
+  destination?: unknown
+  client?: unknown
+  transport?: unknown
+  card?: unknown
+  line?: unknown
+  value?: unknown
+}
+
+/**
+ * Lê a ida inteira de uma vez.
+ *
+ * Antes o formulário mandava um trecho só, e marcar "voltou" nele gerava uma
+ * ida e volta fechada em si. Quem pega ônibus e depois barca lançava duas
+ * vezes e o dia saía como duas viagens separadas — ia e voltava, ia e voltava
+ * — em vez de uma ida com duas conduções e o espelho no fim.
+ */
+function readLegs(raw: string): LegDraft[] | FieldErrors {
+  let parsed: unknown
+
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return { legs: 'Não foi possível ler os trechos. Recarregue a página.' }
+  }
+
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    return { legs: 'Informe ao menos um trecho.' }
+  }
+
+  const errors: FieldErrors = {}
+  const legs: LegDraft[] = []
+
+  ;(parsed as TrechoBruto[]).forEach((item, indice) => {
+    const origin = normalizeText(String(item.origin ?? ''))
+    const destination = normalizeText(String(item.destination ?? ''))
+    const client = normalizeText(String(item.client ?? ''))
+    const line = normalizeText(String(item.line ?? ''))
+    const transport = String(item.transport ?? '')
+    const card = String(item.card ?? '')
+    const value = parseAmount(String(item.value ?? ''))
+
+    const campo = (nome: string) => `${indice}.${nome}`
+
+    if (!origin) errors[campo('origin')] = 'Informe o bairro de origem.'
+    else {
+      const limite = tooLong(origin, MAX_LENGTHS.bairro, 'O bairro')
+      if (limite) errors[campo('origin')] = limite
+    }
+
+    if (!destination) errors[campo('destination')] = 'Informe o bairro de destino.'
+    else {
+      const limite = tooLong(destination, MAX_LENGTHS.bairro, 'O bairro')
+      if (limite) errors[campo('destination')] = limite
+    }
+
+    if (!client) errors[campo('client')] = 'Informe o cliente, a empresa ou "Residência".'
+    else {
+      const limite = tooLong(client, MAX_LENGTHS.cliente, 'O cliente')
+      if (limite) errors[campo('client')] = limite
+    }
+
+    if (!isTransportType(transport)) errors[campo('transport')] = 'Escolha o transporte.'
+    if (!isCardType(card)) errors[campo('card')] = 'Escolha o cartão.'
+
+    const limiteLinha = tooLong(line, MAX_LENGTHS.linha, 'A linha')
+    if (limiteLinha) errors[campo('line')] = limiteLinha
+
+    if (value === null) errors[campo('value')] = 'Valor inválido. Use vírgula: 4,70.'
+    else if (value === 0) errors[campo('value')] = 'O valor precisa ser maior que zero.'
+
+    if (isTransportType(transport) && isCardType(card) && value) {
+      legs.push({ origin, destination, client, transport, card, line: line || null, value })
+    }
+  })
+
+  return Object.keys(errors).length > 0 ? errors : legs
+}
+
+// ---------------------------------------------------------------------------
+// Lançar o dia (a ida inteira, com a volta espelhada opcional)
+// ---------------------------------------------------------------------------
+
 export async function createTrip(_prevState: FormState, formData: FormData): Promise<FormState> {
-  const fields = readTripFields(formData)
-  if (isFieldErrors(fields)) return { fieldErrors: fields }
+  const date = String(formData.get('date') ?? '')
+  if (!DATE_PATTERN.test(date)) return { fieldErrors: { date: 'Escolha a data.' } }
+
+  const legs = readLegs(String(formData.get('legs') ?? ''))
+  if (!Array.isArray(legs)) return { fieldErrors: legs }
 
   const includeReturn = formData.get('round_trip') === 'on'
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  const { date, ...leg } = fields
-  const legs = buildDayLegs([leg], includeReturn)
+  const dayLegs = buildDayLegs(legs, includeReturn)
 
-  const { error } = await supabase.from('trips').insert(legsToTrips(legs, user.id, date))
+  const { count: jaExistiam } = await supabase
+    .from('trips')
+    .select('id', { count: 'exact', head: true })
+    .eq('date', date)
+
+  const { error } = await supabase.from('trips').insert(legsToTrips(dayLegs, user.id, date))
 
   if (error) {
-    return { error: 'Não foi possível salvar o trecho. Tente de novo.' }
+    return { error: 'Não foi possível salvar. Tente de novo.' }
   }
 
   revalidatePath('/dashboard/trips')
   revalidatePath('/dashboard')
 
+  const lancados = `${dayLegs.length} ${dayLegs.length === 1 ? 'trecho lançado' : 'trechos lançados'}.`
+
   return {
-    success: includeReturn
-      ? 'Ida e volta lançadas: 2 trechos.'
-      : 'Trecho lançado.',
+    success: jaExistiam
+      ? `${lancados} Atenção: este dia já tinha ${jaExistiam} ${
+          jaExistiam === 1 ? 'trecho' : 'trechos'
+        } antes — confira se não duplicou.`
+      : lancados,
   }
 }
 
@@ -236,6 +332,13 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
 
   const dayLegs = includeReturn ? [...outbound, ...mirrorLegs(outbound)] : outbound
 
+  // Quantos já existiam nesse dia: duplicar trecho vira reembolso a mais, e a
+  // pessoa merece saber na hora, não no fechamento.
+  const { count: jaExistiam } = await supabase
+    .from('trips')
+    .select('id', { count: 'exact', head: true })
+    .eq('date', date)
+
   const { error } = await supabase.from('trips').insert(legsToTrips(dayLegs, user.id, date))
 
   if (error) {
@@ -245,8 +348,16 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
   revalidatePath('/dashboard/trips')
   revalidatePath('/dashboard')
 
+  const lancados = `${place.name}: ${dayLegs.length} ${
+    dayLegs.length === 1 ? 'trecho lançado' : 'trechos lançados'
+  }.`
+
   return {
-    success: `${place.name}: ${dayLegs.length} ${dayLegs.length === 1 ? 'trecho lançado' : 'trechos lançados'}.`,
+    success: jaExistiam
+      ? `${lancados} Atenção: este dia já tinha ${jaExistiam} ${
+          jaExistiam === 1 ? 'trecho' : 'trechos'
+        } antes — confira se não duplicou.`
+      : lancados,
   }
 }
 

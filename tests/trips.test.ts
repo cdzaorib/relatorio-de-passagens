@@ -88,6 +88,37 @@ describe('montagem do dia', () => {
     assert.equal(buildDayLegs(ida, false).length, 2)
   })
 
+  test('lançar trecho a trecho com volta não é o mesmo que lançar a ida inteira', () => {
+    // O bug que apareceu em produção: quem pegava ônibus e depois barca
+    // lançava duas vezes marcando "voltou" nas duas, e o dia saía como duas
+    // viagens fechadas em si — ia e voltava do ônibus, ia e voltava da barca —
+    // em vez de uma ida com duas conduções e o espelho no fim.
+    const trechoAtrecho = [...buildDayLegs([ida[0]], true), ...buildDayLegs([ida[1]], true)]
+    const idaInteira = buildDayLegs(ida, true)
+
+    assert.equal(trechoAtrecho.length, idaInteira.length, 'os dois têm 4 trechos')
+    assert.deepEqual(
+      trechoAtrecho.map((leg) => [leg.origin, leg.destination]),
+      [
+        ['Bananal', 'Cocotá'],
+        ['Cocotá', 'Bananal'],
+        ['Cocotá', 'Praça XV'],
+        ['Praça XV', 'Cocotá'],
+      ],
+      'volta para casa no meio do dia e reaparece na Cocotá do nada',
+    )
+    assert.deepEqual(
+      idaInteira.map((leg) => [leg.origin, leg.destination]),
+      [
+        ['Bananal', 'Cocotá'],
+        ['Cocotá', 'Praça XV'],
+        ['Praça XV', 'Cocotá'],
+        ['Cocotá', 'Bananal'],
+      ],
+      'percurso contínuo: a volta desfaz a ida na ordem inversa',
+    )
+  })
+
   test('reproduz o dia da planilha, linha por linha', () => {
     const trips = legsToTrips(buildDayLegs(ida, true), 'u1', '2026-07-01')
 

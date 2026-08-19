@@ -59,7 +59,7 @@ function parseLegs(raw: string): ParsedLeg[] | string {
     if (!isCardType(card)) return `Trecho ${position}: escolha o cartão.`
 
     const value = parseAmount(String(item.value ?? ''))
-    if (value === null) return `Trecho ${position}: valor inválido. Escreva assim: 4,70.`
+    if (value === null) return `Trecho ${position}: valor inválido. Use vírgula nos centavos: 4,70.`
     if (value === 0) return `Trecho ${position}: o valor precisa ser maior que zero.`
 
     const fareGroupId = item.fareGroupId ? String(item.fareGroupId) : null
