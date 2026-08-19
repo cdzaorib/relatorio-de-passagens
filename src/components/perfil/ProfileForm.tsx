@@ -7,16 +7,18 @@ import { Alert } from '@/components/ui/Alert'
 import { SubmitButton } from '@/components/ui/SubmitButton'
 import { TextField } from '@/components/ui/TextField'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { useFocusFirstError } from '@/lib/use-focus-first-error'
 import { MAX_LENGTHS } from '@/lib/validation'
 import type { Profile } from '@/types'
 
 export function ProfileForm({ profile }: { profile: Profile | null }) {
   const [state, formAction] = useActionState(updateProfile, EMPTY_FORM_STATE)
 
+  const formRef = useFocusFirstError(state)
   const fieldError = (field: string) => state.fieldErrors?.[field]
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-5">
       {state.error ? <Alert variant="error">{state.error}</Alert> : null}
       {state.success ? <Alert variant="success">{state.success}</Alert> : null}
 

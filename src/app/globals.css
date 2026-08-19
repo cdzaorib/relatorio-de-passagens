@@ -52,6 +52,31 @@ body {
   font-family: var(--font-sans);
 }
 
+/*
+ * Remove o atraso de 300ms que o navegador do celular impõe ao toque
+ * esperando um possível duplo-toque. O app é usado em pé no ponto de ônibus.
+ */
+button,
+a,
+label,
+select,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+/* Visível só para leitor de tela, até receber foco pelo teclado. */
+.pular-para-conteudo {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 50;
+}
+
+.pular-para-conteudo:focus {
+  left: 0.75rem;
+  top: 0.75rem;
+}
+
 /* Rótulo de letreiro: caixa alta condensada com respiro entre letras. */
 .letreiro {
   font-family: var(--font-display);

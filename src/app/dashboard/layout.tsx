@@ -31,6 +31,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen">
+      {/* Primeiro item do teclado: pula o menu e vai direto ao conteúdo. */}
+      <a
+        href="#conteudo"
+        className="pular-para-conteudo letreiro rounded-lg bg-ink px-4 py-2 text-sm text-paper"
+      >
+        Pular para o conteúdo
+      </a>
+
       <header className="no-print border-b-2 border-marca bg-ink text-paper">
         <div className="mx-auto max-w-5xl px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 py-3">
@@ -71,7 +79,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">{children}</main>
+      <main id="conteudo" className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        {children}
+      </main>
     </div>
   )
 }

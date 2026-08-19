@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 
 import { createTrip, updateTrip } from '@/app/dashboard/trips/actions'
 import { Alert } from '@/components/ui/Alert'
@@ -10,6 +10,7 @@ import { TextField } from '@/components/ui/TextField'
 import { fareToLegValues } from '@/lib/fares'
 import { formatAmountInput } from '@/lib/format'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { useFocusFirstError } from '@/lib/use-focus-first-error'
 import { MAX_LENGTHS } from '@/lib/validation'
 import type { Suggestions } from '@/lib/suggestions'
 import {
@@ -47,7 +48,8 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
     EMPTY_FORM_STATE,
   )
 
-  const formRef = useRef<HTMLFormElement>(null)
+  // O mesmo ref serve para limpar o formulário e para achar o campo com erro.
+  const formRef = useFocusFirstError(state)
   const [date, setDate] = useState(trip?.date ?? today)
   const [transport, setTransport] = useState<TransportType>(trip?.transport ?? 'onibus')
   const [card, setCard] = useState<CardType>(
@@ -119,6 +121,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           label="Bairro de origem"
           name="origin"
           required
+          autoComplete="off"
           defaultValue={trip?.origin ?? ''}
           suggestions={suggestions.neighborhoods}
           placeholder="Bananal"
@@ -130,6 +133,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           label="Bairro de destino"
           name="destination"
           required
+          autoComplete="off"
           defaultValue={trip?.destination ?? ''}
           suggestions={suggestions.neighborhoods}
           placeholder="Cocotá"
@@ -141,6 +145,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
           label="Cliente, empresa ou residência"
           name="client"
           required
+          autoComplete="off"
           defaultValue={trip?.client ?? ''}
           suggestions={suggestions.clients}
           placeholder="Tecnoarte"
@@ -174,6 +179,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
         <TextField
           label="Linha"
           name="line"
+          autoComplete="off"
           value={line}
           onChange={(event) => setLine(event.target.value)}
           placeholder="323"

@@ -24,6 +24,8 @@ export function ForgotPasswordForm() {
         name="email"
         type="email"
         autoComplete="email"
+        spellCheck={false}
+        autoCapitalize="none"
         required
         defaultValue={state.values?.email ?? ''}
         placeholder="voce@empresa.com"

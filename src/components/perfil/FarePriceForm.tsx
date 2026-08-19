@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useRef, useState } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 
 import { createFarePrice, updateFarePrice } from '@/app/dashboard/perfil/actions'
 import { Alert } from '@/components/ui/Alert'
@@ -9,6 +9,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton'
 import { TextField } from '@/components/ui/TextField'
 import { formatAmountInput } from '@/lib/format'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { useFocusFirstError } from '@/lib/use-focus-first-error'
 import { MAX_LENGTHS } from '@/lib/validation'
 import {
   CARD_LABELS,
@@ -42,7 +43,7 @@ export function FarePriceForm({ farePrice, onDone, onCancel }: FarePriceFormProp
     EMPTY_FORM_STATE,
   )
 
-  const formRef = useRef<HTMLFormElement>(null)
+  const formRef = useFocusFirstError(state)
   const [transport, setTransport] = useState<TransportType>(farePrice?.transport ?? 'onibus')
   const [card, setCard] = useState<CardType>(
     farePrice?.card ?? DEFAULT_CARD_BY_TRANSPORT[farePrice?.transport ?? 'onibus'],

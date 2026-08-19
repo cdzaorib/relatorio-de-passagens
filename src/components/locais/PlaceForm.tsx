@@ -10,6 +10,7 @@ import { TextField } from '@/components/ui/TextField'
 import { fareToLegValues } from '@/lib/fares'
 import { formatAmountInput } from '@/lib/format'
 import { EMPTY_FORM_STATE } from '@/lib/form-state'
+import { useFocusFirstError } from '@/lib/use-focus-first-error'
 import { MAX_LENGTHS } from '@/lib/validation'
 import type { Suggestions } from '@/lib/suggestions'
 import {
@@ -80,6 +81,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
     EMPTY_FORM_STATE,
   )
 
+  const formRef = useFocusFirstError(state)
   const [name, setName] = useState(place?.name ?? '')
   const [legs, setLegs] = useState<LegRow[]>(place ? legsFromPlace(place) : [emptyLeg()])
 
@@ -122,7 +124,7 @@ export function PlaceForm({ fares, suggestions, place, onDone, onCancel }: Place
   const serializedLegs = JSON.stringify(legs)
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form ref={formRef} action={formAction} className="flex flex-col gap-6">
       {place ? <input type="hidden" name="id" value={place.id} /> : null}
       <input type="hidden" name="legs" value={serializedLegs} />
 
