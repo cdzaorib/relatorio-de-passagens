@@ -328,5 +328,5 @@ dizendo o que falta preencher.
 - [x] **F4** Trips: lançamento, regra do cartão, simular volta, locais salvos
       (cadastrar e aplicar em uma data), tabela editável
 - [x] **F5** Filtro de período e cards de resumo
-- [ ] **F6** Geração do PDF no formato do relatório
+- [x] **F6** Geração do PDF no formato do relatório
 - [x] **F7** Polish: validações, estados de carregamento, mobile, deploy
