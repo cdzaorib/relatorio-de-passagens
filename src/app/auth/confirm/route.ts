@@ -14,7 +14,7 @@ function isEmailOtpType(value: string | null): value is EmailOtpType {
  * Ponto de entrada dos links de e-mail (confirmação de cadastro e
  * redefinição de senha). Troca o token por uma sessão em cookie e manda o
  * usuário para o destino. Aceita os dois formatos:
- *   - token_hash + type  → links gerados por nós (Resend) e templates novos
+ *   - token_hash + type  → templates de e-mail do Supabase
  *   - code               → fluxo PKCE do próprio Supabase
  */
 export async function GET(request: NextRequest) {

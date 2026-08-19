@@ -8,7 +8,7 @@ planilha Excel preenchida à mão.
 
 - **Next.js 15** (App Router) + **TypeScript** + **Tailwind CSS 4**
 - **Supabase** — Postgres, Auth (e-mail/senha) e RLS
-- **Resend** — e-mail de redefinição de senha
+- **Resend** — SMTP do Supabase para o e-mail de redefinição
 - **pdf-lib** — geração do PDF
 - **Vercel** — deploy
 
@@ -62,12 +62,13 @@ logado das telas de login e cadastro.
 
 ### E-mail de redefinição
 
-Com `RESEND_API_KEY` e a chave secreta do Supabase configuradas, o app gera o
-link de recuperação e envia pelo **Resend**, com remetente e texto próprios.
+Quem envia é o Supabase, configurado em *Authentication > SMTP Settings* para
+falar com o Resend. O app só pede o envio — não gera link, não guarda chave de
+e-mail e **não precisa da chave secreta**, aquela que ignora a RLS. Uma chave
+a menos em produção é uma chave a menos para vazar.
 
-Sem elas, cai no e-mail padrão do Supabase — funciona igual, só com a
-identidade deles. Nesse caso, ajuste em *Authentication > Email Templates* o
-template **Reset password** para apontar para:
+Ajuste em *Authentication > Email Templates* o template **Reset password**
+para apontar para:
 
 ```
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset
@@ -82,10 +83,12 @@ E o **Confirm signup** para:
 ### Segredos e privacidade
 
 Chave nenhuma mora no repositório. `.env.local` está no `.gitignore`; em
-produção, as variáveis vão nos *Environment Variables* da Vercel. A chave
-secreta do Supabase (`SUPABASE_SERVICE_ROLE_KEY` / `SUPABASE_SECRET_KEY`)
-ignora a RLS por completo — ela só é lida em código de servidor e nunca pode
-aparecer em variável `NEXT_PUBLIC_*`.
+produção, as variáveis vão nos *Environment Variables* da Vercel.
+
+O app roda **sem nenhuma chave secreta**: as duas variáveis do Supabase são
+públicas por natureza, e é a RLS que segura o acesso. Não existe caminho no
+código que ignore a RLS, porque não existe chave capaz disso — o que evita a
+pior falha possível aqui, uma consulta que devolvesse trecho de outra pessoa.
 
 **O e-mail do usuário não vai para o HTML.** O cabeçalho mostra o nome do
 perfil, nunca o endereço, e a tela de nova senha exibe o e-mail mascarado
@@ -115,7 +118,9 @@ reajuste nenhum.
 
 **Arquivar** tira a passagem da lista sem apagar nada.
 
-O campo de valor aceita `4,70`, `R$ 4,70`, `4.70` ou `1.234,56`.
+O campo de valor aceita `4,70`, `R$ 4,70`, `4.70` ou `1.234,56`. Recusa
+`1.234`: em português é mil duzentos e trinta e quatro, em inglês é um e
+vinte e três, e chutar em dinheiro é pior do que pedir para digitar de novo.
 
 ## Lançamento de trechos
 
@@ -126,10 +131,21 @@ volta marcada, os trechos espelhados vêm junto. Um local de dois ônibus lança
 quatro linhas de uma vez. O valor usado é sempre o do preço vigente, não o
 guardado no cadastro do local.
 
-**Na mão** — para o dia fora do comum. Escolher uma passagem cadastrada
-preenche transporte, cartão, valor e chuta a linha a partir do nome
-(`Ônibus 323` → `323`), tudo editável. A caixa *"Voltou para o mesmo local de
-início?"* vem marcada e lança o espelho junto.
+**Na mão** — para o dia fora do comum. **A unidade é o dia, não o trecho**:
+você declara a ida inteira antes de confirmar, acrescentando *"Peguei outra
+condução nesta ida"* para cada ônibus ou barca. A origem do trecho seguinte já
+vem preenchida com o destino do anterior, porque quem desce da barca embarca
+ali mesmo. A caixa *"Voltou para casa pelo mesmo caminho?"* vem marcada e
+espelha a ida inteira, e uma prévia do percurso mostra o que será gravado
+antes de salvar.
+
+Lançar trecho a trecho seria diferente e errado: a caixa da volta, aplicada a
+um trecho isolado, não sabe que existe um segundo trecho, e o dia sairia como
+duas viagens fechadas em si — ia e voltava do ônibus, ia e voltava da barca.
+Tem teste de regressão em `tests/trips.test.ts`.
+
+Escolher uma passagem cadastrada preenche transporte, cartão, valor e chuta a
+linha a partir do nome (`Ônibus 323` → `323`), tudo editável.
 
 A tabela abaixo mostra os últimos 30 dias agrupados por dia, com total do dia,
 edição no lugar, exclusão de um trecho e exclusão do dia inteiro. Bairros e
@@ -269,6 +285,7 @@ src/
     index.ts           rótulos e regras de domínio (cartão padrão etc.)
 supabase/
   schema.sql           schema completo + RLS (idempotente)
+  migrations/          alterações para bancos que já existiam
 ```
 
 ## Modelo de dados

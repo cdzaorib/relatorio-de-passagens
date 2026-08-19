@@ -7,8 +7,6 @@ import { revalidatePath } from 'next/cache'
 import { getSiteUrl } from '@/lib/env'
 import type { FormState } from '@/lib/form-state'
 import { checkRateLimit } from '@/lib/rate-limit'
-import { isResendConfigured, sendPasswordResetEmail } from '@/lib/resend'
-import { createAdminClient, isAdminConfigured } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import {
   normalizeEmail,
@@ -131,27 +129,10 @@ export async function requestPasswordReset(
 
   const resetUrl = `${getSiteUrl()}/auth/confirm?next=/auth/reset`
 
+  // O envio é do Supabase, que fala com o Resend por SMTP. O app já gerou o
+  // link aqui antes, com a chave secreta — que ignora a RLS por completo. Sair
+  // desse caminho é uma chave a menos guardada em produção.
   try {
-    if (isResendConfigured() && isAdminConfigured()) {
-      // Caminho principal: geramos o link aqui e mandamos pelo Resend.
-      const admin = createAdminClient()
-      const { data, error } = await admin.auth.admin.generateLink({
-        type: 'recovery',
-        email,
-        options: { redirectTo: `${getSiteUrl()}/auth/reset` },
-      })
-
-      if (error || !data?.properties?.hashed_token) {
-        // E-mail não cadastrado cai aqui — segue com a mensagem genérica.
-        return genericSuccess
-      }
-
-      const link = `${resetUrl}&token_hash=${data.properties.hashed_token}&type=recovery`
-      await sendPasswordResetEmail(email, link)
-      return genericSuccess
-    }
-
-    // Sem Resend configurado, usa o e-mail padrão do próprio Supabase.
     const supabase = await createClient()
     await supabase.auth.resetPasswordForEmail(email, { redirectTo: resetUrl })
     return genericSuccess
