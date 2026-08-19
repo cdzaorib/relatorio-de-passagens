@@ -41,6 +41,7 @@ Aplicação em http://localhost:3000.
 | `npm run start`     | Sobe o build de produção                 |
 | `npm run lint`      | ESLint                                   |
 | `npm run typecheck` | `tsc --noEmit`                           |
+| `npm test`          | Suíte de testes (Node puro, sem runner)  |
 
 ## Autenticação
 
@@ -208,6 +209,28 @@ Detalhes que valem saber:
 - As fontes padrão do PDF usam WinAnsi, que cobre o português mas não tudo;
   `sanitize()` troca aspas curvas, travessões e qualquer caractere de fora
   antes de desenhar — um só derrubaria a geração inteira.
+
+## Testes
+
+```bash
+npm test
+```
+
+Roda no `node:test` embutido, sem runner nem dependência de teste. Um resolvedor
+de 30 linhas em `tests/resolver.mjs` ensina o Node a entender o atalho `@/` e a
+extensão implícita dos imports, do mesmo jeito que o Next faz pelo tsconfig.
+
+A suíte cobre a lógica que não pode errar:
+
+| Arquivo               | O que protege                                              |
+| --------------------- | ---------------------------------------------------------- |
+| `trips.test.ts`       | O espelho da volta: ordem invertida, origem/destino trocados, cliente `Residência`. Reproduz o dia da planilha linha por linha |
+| `period.test.ts`      | Quinzenas, fevereiro bissexto, intervalo invertido, cookie corrompido |
+| `format.test.ts`      | Leitura de `4,70` / `R$ 4,70` / `1.234,56`, e data que não anda um dia por fuso |
+| `report.test.ts`      | Totais por cartão e o arredondamento que evita `211.09999999999994` |
+| `validation.test.ts`  | Redirecionamento que não escapa do app, máscara de e-mail, erros traduzidos sem vazar detalhe interno |
+| `pdf.test.ts`         | PDF válido, quebra de página e acento que não derruba a geração |
+| `fares.test.ts`       | Passagem preenchendo o trecho e a dedução da linha pelo nome |
 
 ## Estrutura
 
