@@ -29,7 +29,7 @@ export default async function ResetPasswordPage() {
 
         <Link
           href="/auth/forgot"
-          className="inline-block rounded-lg bg-ink px-4 py-2.5 font-medium text-white transition hover:bg-ink-soft"
+          className="letreiro inline-block rounded-lg bg-ink px-4 py-2.5 text-sm text-paper transition hover:bg-ink-soft"
         >
           Pedir um novo link
         </Link>
