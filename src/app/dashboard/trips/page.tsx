@@ -47,7 +47,12 @@ export default async function TripsPage() {
     getSuggestions(supabase),
   ])
 
-  const falha = primeiraFalha(faresResult, tripsResult, placesResult, legsResult)
+  const falha = primeiraFalha(
+    ['passagens', faresResult],
+    ['trechos', tripsResult],
+    ['locais', placesResult],
+    ['trechos dos locais', legsResult],
+  )
   const fares = faresResult.data ?? []
   const trips = tripsResult.data ?? []
   const legs = legsResult.data ?? []

@@ -42,7 +42,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       .order('leg_order', { ascending: true }),
   ])
 
-  const falha = primeiraFalha(profileResult, tripsResult)
+  const falha = primeiraFalha(['perfil', profileResult], ['trechos', tripsResult])
   const profile = profileResult.data
   const trips = tripsResult.data ?? []
   const totals = summarize(trips)

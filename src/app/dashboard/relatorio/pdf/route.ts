@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   // PDF com zero trecho por causa de erro de banco seria pior do que nenhum
   // PDF: a pessoa entregaria ao financeiro um relatório que diz que ela não
   // se deslocou no mês.
-  const falha = primeiraFalha(profileResult, tripsResult)
+  const falha = primeiraFalha(['perfil (pdf)', profileResult], ['trechos (pdf)', tripsResult])
   if (falha) {
     return new NextResponse(falha.mensagem, {
       status: 503,

@@ -34,7 +34,7 @@ export default async function PerfilPage() {
   ])
 
   const profile = profileResult.data
-  const falha = primeiraFalha(activeResult, historyResult)
+  const falha = primeiraFalha(['passagens ativas', activeResult], ['histórico de preços', historyResult])
   const activeFares = activeResult.data ?? []
   const history = historyResult.data ?? []
 

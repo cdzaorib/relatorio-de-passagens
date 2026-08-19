@@ -21,7 +21,11 @@ export default async function LocaisPage() {
     getSuggestions(supabase),
   ])
 
-  const falha = primeiraFalha(faresResult, placesResult, legsResult)
+  const falha = primeiraFalha(
+    ['passagens', faresResult],
+    ['locais', placesResult],
+    ['trechos dos locais', legsResult],
+  )
   const fares = faresResult.data ?? []
   const legs = legsResult.data ?? []
 

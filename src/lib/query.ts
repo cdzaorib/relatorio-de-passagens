@@ -1,28 +1,60 @@
 import type { PostgrestError } from '@supabase/supabase-js'
 
 /**
- * "Essa coluna não existe", nos dois dialetos que aparecem: 42703 é o Postgres
- * recusando a leitura, PGRST204 é o PostgREST recusando a escrita porque o
- * cache de schema dele não conhece a coluna.
+ * Por que uma consulta falhou, no nível em que a resposta muda o que fazer.
+ * Não interessa se foi leitura ou escrita: interessa se a saída é rodar SQL,
+ * mexer na RLS ou simplesmente esperar.
  */
-const COLUNA_AUSENTE = new Set(['42703', 'PGRST204'])
+export type MotivoDaFalha = 'tabela' | 'coluna' | 'permissao' | 'desconhecido'
 
 export type FalhaDeLeitura = {
-  /** Banco atrás do código: a correção é rodar a migração, não recarregar. */
+  motivo: MotivoDaFalha
+  /** Verdadeiro quando a correção é rodar SQL, não recarregar a página. */
   schemaDesatualizado: boolean
+  /** Código cru, para diagnóstico. Não é segredo e encurta o socorro. */
+  codigo: string
   mensagem: string
 }
 
-const AVISO_SCHEMA =
-  'O banco de dados está atrás do app: falta uma coluna que o código já usa. ' +
-  'Abra o SQL Editor do Supabase e rode os arquivos de supabase/migrations. ' +
-  'Nada foi perdido — o que já está gravado continua lá.'
+/*
+ * Cada problema aparece em dois dialetos: o do Postgres, quando ele mesmo
+ * recusa, e o do PostgREST, quando o cache de schema dele nem chega a
+ * perguntar. São o mesmo problema e pedem a mesma correção.
+ */
+const TABELA_AUSENTE = new Set([
+  '42P01', // undefined_table
+  'PGRST205', // tabela fora do cache de schema
+])
 
-// Serve para leitura e para escrita: as duas falham pelo mesmo motivo e a
-// pessoa não precisa saber de qual lado deu errado.
-const AVISO_GENERICO =
-  'Não foi possível falar com o banco agora. Tente de novo em alguns instantes; ' +
-  'se continuar assim, ele pode estar fora do ar.'
+const COLUNA_AUSENTE = new Set([
+  '42703', // undefined_column
+  'PGRST204', // coluna fora do cache de schema
+  'PGRST118', // não deu para ordenar por essa coluna
+])
+
+const SEM_PERMISSAO = new Set([
+  '42501', // insufficient_privilege
+  '.42501', // o mesmo, como o PostgREST às vezes o repassa
+])
+
+const MENSAGENS: Record<MotivoDaFalha, string> = {
+  tabela:
+    'O banco ainda não tem as tabelas do app. Abra o SQL Editor do Supabase e ' +
+    'rode supabase/schema.sql inteiro — ele pode ser rodado mais de uma vez sem ' +
+    'estragar o que já existe.',
+  coluna:
+    'O banco está atrás do app: falta uma coluna que o código já usa. Abra o SQL ' +
+    'Editor do Supabase e rode os arquivos de supabase/migrations. Nada foi ' +
+    'perdido — o que já está gravado continua lá.',
+  permissao:
+    'O banco recusou o acesso aos seus dados. Normalmente é a RLS: rode ' +
+    'supabase/schema.sql de novo, que ele recria as políticas.',
+  // Serve para leitura e para escrita: a pessoa não precisa saber de qual lado
+  // deu errado, só que não adianta mexer no banco por causa disso.
+  desconhecido:
+    'Não foi possível falar com o banco agora. Tente de novo em alguns instantes; ' +
+    'se continuar assim, ele pode estar fora do ar.',
+}
 
 /**
  * Só o código do erro importa aqui. Pedir o `PostgrestError` inteiro obrigaria
@@ -30,12 +62,28 @@ const AVISO_GENERICO =
  */
 type ErroComCodigo = Pick<PostgrestError, 'code'>
 
-export function descreveFalha(error: ErroComCodigo): FalhaDeLeitura {
-  const schemaDesatualizado = COLUNA_AUSENTE.has(error.code)
+function classifica(code: string): MotivoDaFalha {
+  if (TABELA_AUSENTE.has(code)) return 'tabela'
+  if (COLUNA_AUSENTE.has(code)) return 'coluna'
+  if (SEM_PERMISSAO.has(code)) return 'permissao'
+  return 'desconhecido'
+}
 
+export function descreveFalha(error: ErroComCodigo): FalhaDeLeitura {
+  const codigo = error.code || 'sem-codigo'
+  const motivo = classifica(codigo)
+
+  /*
+   * O código vai junto da mensagem. Ele não é segredo — não nomeia tabela,
+   * coluna nem dado de ninguém — e é a diferença entre a pessoa conseguir
+   * dizer o que houve e ter que descrever a tela por telefone. Sem ele, a
+   * mensagem genérica esconde justamente a informação que resolveria o caso.
+   */
   return {
-    schemaDesatualizado,
-    mensagem: schemaDesatualizado ? AVISO_SCHEMA : AVISO_GENERICO,
+    motivo,
+    schemaDesatualizado: motivo === 'tabela' || motivo === 'coluna',
+    codigo,
+    mensagem: `${MENSAGENS[motivo]} (código ${codigo})`,
   }
 }
 
@@ -46,12 +94,25 @@ export function descreveFalha(error: ErroComCodigo): FalhaDeLeitura {
  * "nenhum trecho lançado" e conclui que o app perdeu o trabalho dela, quando
  * na verdade o banco recusou a pergunta. Silêncio é a pior resposta possível
  * para quem depende do relatório para receber.
+ *
+ * `onde` nomeia a consulta que falhou e vai só para o log do servidor: ajuda a
+ * achar o problema sem pôr nome de tabela na tela de ninguém.
  */
 export function primeiraFalha(
-  ...resultados: { error: ErroComCodigo | null }[]
+  ...resultados: ({ error: ErroComCodigo | null } | [string, { error: ErroComCodigo | null }])[]
 ): FalhaDeLeitura | null {
-  for (const resultado of resultados) {
-    if (resultado.error) return descreveFalha(resultado.error)
+  for (const item of resultados) {
+    const [onde, resultado] = Array.isArray(item) ? item : ['consulta', item]
+    if (!resultado.error) continue
+
+    const falha = descreveFalha(resultado.error)
+
+    // Só o rótulo e o código: a mensagem do provedor pode carregar o trecho da
+    // consulta, e log de servidor não é lugar para o dado de ninguém.
+    console.error(`Falha de banco em ${onde}: código ${falha.codigo} (${falha.motivo})`)
+
+    return falha
   }
+
   return null
 }
