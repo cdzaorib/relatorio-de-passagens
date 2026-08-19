@@ -28,6 +28,7 @@ function trip(date: string, parcial: Partial<Trip> = {}): Trip {
     line: '323',
     card: 'jae',
     value: 4.7,
+    leg_order: 0,
     created_at: '2026-08-01T10:00:00.000Z',
     updated_at: '2026-08-01T10:00:00.000Z',
     ...parcial,

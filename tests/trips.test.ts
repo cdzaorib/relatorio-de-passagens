@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildDayLegs, legsToTrips, mirrorLegs, type LegDraft } from '@/lib/trips'
+import { buildDayLegs, legsToTrips, mirrorLegs, outboundOf, type LegDraft } from '@/lib/trips'
 
 const ida: LegDraft[] = [
   {
@@ -201,5 +201,52 @@ describe('conversão para registro do banco', () => {
   test('linha preenchida é preservada sem espaços nas pontas', () => {
     const trips = legsToTrips([{ ...ida[0], line: ' 143C ' }], 'u1', '2026-07-01')
     assert.equal(trips[0].line, '143C')
+  })
+})
+
+describe('reconhecer a ida dentro de um dia lançado', () => {
+  test('dia com volta devolve só a ida', () => {
+    const dia = buildDayLegs(ida, true)
+
+    assert.deepEqual(
+      outboundOf(dia).map((leg) => [leg.origin, leg.destination]),
+      [
+        ['Bananal', 'Cocotá'],
+        ['Cocotá', 'Praça XV'],
+      ],
+    )
+  })
+
+  test('dia sem volta é ida inteira', () => {
+    assert.equal(outboundOf(buildDayLegs(ida, false)).length, 2)
+  })
+
+  test('número ímpar de trechos não tem espelho', () => {
+    assert.equal(outboundOf([...ida, ida[0]]).length, 3)
+  })
+
+  test('dia com duas saídas separadas não é espelho', () => {
+    // Foi ao cliente A e voltou, depois foi ao cliente B e voltou: quatro
+    // trechos, mas a segunda metade não desfaz a primeira.
+    const duasSaidas = [
+      ...buildDayLegs([ida[0]], true),
+      ...buildDayLegs([ida[1]], true),
+    ]
+
+    assert.equal(outboundOf(duasSaidas).length, 4, 'cortou ao meio um dia que não é espelho')
+  })
+
+  test('mesmo caminho em transporte diferente não conta como volta', () => {
+    // Ida de barca, volta de ônibus pela ponte: os bairros batem, o meio não.
+    const dia: LegDraft[] = [
+      { ...ida[1] },
+      { ...ida[1], origin: ida[1].destination, destination: ida[1].origin, transport: 'onibus' },
+    ]
+
+    assert.equal(outboundOf(dia).length, 2)
+  })
+
+  test('um trecho só é a ida', () => {
+    assert.equal(outboundOf([ida[0]]).length, 1)
   })
 })

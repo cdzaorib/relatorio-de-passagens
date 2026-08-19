@@ -20,3 +20,26 @@ export function fareToLegValues(fare: FarePrice) {
     fareGroupId: fare.group_id,
   }
 }
+
+/**
+ * Acha a passagem cadastrada que corresponde a um trecho já lançado, para o
+ * local salvo a partir dele acompanhar reajuste em vez de congelar o valor.
+ *
+ * O trecho guarda uma cópia do valor da época, então transporte, cartão e
+ * valor idênticos são um sinal forte. Ainda assim só liga quando a resposta é
+ * única: com duas passagens do mesmo preço não dá para saber qual foi, e
+ * chutar aqui faria o valor de um local mudar sozinho no reajuste da outra.
+ */
+export function matchFareGroup(
+  fares: Pick<FarePrice, 'group_id' | 'transport' | 'card' | 'value'>[],
+  leg: { transport: string; card: string; value: number },
+): string | null {
+  const candidatos = fares.filter(
+    (fare) =>
+      fare.transport === leg.transport &&
+      fare.card === leg.card &&
+      Number(fare.value) === leg.value,
+  )
+
+  return candidatos.length === 1 ? candidatos[0].group_id : null
+}

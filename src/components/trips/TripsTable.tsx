@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { deleteTrip, deleteTripsOfDay } from '@/app/dashboard/trips/actions'
+import { SaveDayAsPlace } from '@/components/trips/SaveDayAsPlace'
 import { TripForm } from '@/components/trips/TripForm'
 import { CardTag } from '@/components/ui/CardTag'
 import { DeleteForm } from '@/components/ui/DeleteForm'
@@ -53,11 +54,12 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
           <div key={date}>
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <h3 className="letreiro dados text-base text-ink">{formatDate(date)}</h3>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <span className="text-sm text-muted dados">
                   {dayTrips.length} {dayTrips.length === 1 ? 'trecho' : 'trechos'} ·{' '}
                   {formatBRL(dayTotal)}
                 </span>
+                <SaveDayAsPlace date={date} trips={dayTrips} />
                 <DeleteForm
                   action={deleteTripsOfDay}
                   fields={{ date }}

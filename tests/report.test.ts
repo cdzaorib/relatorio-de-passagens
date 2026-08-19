@@ -16,6 +16,7 @@ function trip(date: string, card: Trip['card'], value: number): Trip {
     line: null,
     card,
     value,
+    leg_order: 0,
     created_at: '2026-08-01T10:00:00.000Z',
     updated_at: '2026-08-01T10:00:00.000Z',
   }

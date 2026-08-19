@@ -57,3 +57,34 @@ export function legsToTrips(legs: LegDraft[], userId: string, date: string): Tri
     value: leg.value,
   }))
 }
+
+/**
+ * Descobre qual parte do dia é a ida, para poder virar um local salvo.
+ *
+ * Um dia lançado com volta é a ida seguida do seu espelho. Reconhecer o
+ * espelho é mais honesto do que cortar o dia ao meio ou confiar no cliente
+ * 'Residência': quem lançou dois clientes num dia sem voltar para casa
+ * escreveria 'Residência' na ida e o corte sairia errado.
+ *
+ * Sem espelho, o dia inteiro é a ida — é o caso de quem foi e não voltou.
+ */
+export function outboundOf<T extends Pick<LegDraft, 'origin' | 'destination' | 'transport'>>(
+  legs: T[],
+): T[] {
+  if (legs.length < 2 || legs.length % 2 !== 0) return legs
+
+  const meio = legs.length / 2
+  const ida = legs.slice(0, meio)
+  const volta = legs.slice(meio)
+
+  const espelhado = ida.every((leg, indice) => {
+    const par = volta[volta.length - 1 - indice]
+    return (
+      par.origin === leg.destination &&
+      par.destination === leg.origin &&
+      par.transport === leg.transport
+    )
+  })
+
+  return espelhado ? ida : legs
+}

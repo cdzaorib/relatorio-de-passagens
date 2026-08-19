@@ -154,6 +154,18 @@ navegador — sem biblioteca e funcionando no celular.
 
 ### Locais
 
+O caminho mais curto para criar um: lance o dia uma vez e clique em **Salvar
+como local** no cabeçalho dele, na lista de lançamentos. A rota já está na
+tela — redigitá-la seria trabalho repetido com chance de errar. O app
+reconhece qual metade do dia é a ida detectando o espelho (`outboundOf`, em
+`src/lib/trips.ts`), em vez de cortar ao meio: um dia com duas saídas
+separadas não é espelho de nada, e ali o corte sairia errado.
+
+Se um trecho salvo bater em transporte, cartão e valor com uma passagem
+cadastrada — e só uma —, o local guarda o vínculo e passa a acompanhar
+reajuste. Com duas passagens do mesmo preço não dá para saber qual foi, então
+ele guarda o valor fixo em vez de chutar.
+
 Em `/dashboard/locais` você cadastra **só a ida**, trecho por trecho, na ordem
 em que pega cada condução. A volta nunca é cadastrada: ela é derivada na hora
 do lançamento invertendo a ordem, trocando origem com destino e pondo

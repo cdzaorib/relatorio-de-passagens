@@ -22,6 +22,11 @@ jobs:
       - name: Testes
         run: npm test
 
+      - name: Tipos nos testes
+        # O build só olha src/. Sem este passo, fixture de teste desatualizada
+        # quebra o npm run typecheck de quem clona e ninguém percebe.
+        run: npm run typecheck
+
       - name: Tipos e lint
         # O build roda o ESLint e o TypeScript; se algo estiver torto, ele quebra.
         run: npm run build

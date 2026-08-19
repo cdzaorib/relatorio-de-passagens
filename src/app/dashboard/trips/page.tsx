@@ -82,14 +82,18 @@ export default async function TripsPage() {
           <CardHeader>
             <CardTitle>Lançar por local</CardTitle>
           </CardHeader>
-          <p className="text-sm text-muted">
-            Se você repete o mesmo caminho toda semana, cadastre um local uma vez
-            e depois lance o dia com dois cliques.{' '}
+          <p className="text-sm leading-relaxed text-muted">
+            Se você repete o mesmo caminho toda semana, um local guarda a rota e
+            o dia passa a entrar com dois cliques. O jeito mais fácil de criar o
+            primeiro: lance um dia aqui embaixo e clique em{' '}
+            <strong className="font-medium text-ink">Salvar como local</strong>{' '}
+            no cabeçalho dele — a rota já está pronta, não precisa digitar de
+            novo. Se preferir cadastrar do zero,{' '}
             <Link
               href="/dashboard/locais"
               className="font-medium text-marca-texto hover:text-marca"
             >
-              Cadastrar um local
+              é por aqui
             </Link>
             .
           </p>
@@ -98,10 +102,11 @@ export default async function TripsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Lançar trecho</CardTitle>
+          <CardTitle>Lançar o dia na mão</CardTitle>
           <CardDescription>
-            Para o dia fora do comum. Se você voltou para o mesmo lugar de onde
-            saiu, deixe a caixa marcada e a volta é lançada junto.
+            Para o dia fora do comum. Declare a ida inteira — uma condução de
+            cada vez, na ordem em que você pegou — e deixe a caixa marcada para
+            a volta entrar espelhada.
           </CardDescription>
         </CardHeader>
         <TripForm fares={fares} suggestions={suggestions} today={today} />

@@ -2,11 +2,13 @@
 
 import { revalidatePath } from 'next/cache'
 
+import { matchFareGroup } from '@/lib/fares'
 import { parseAmount } from '@/lib/format'
 import type { FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
+import { outboundOf } from '@/lib/trips'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
-import { isCardType, isTransportType, type PlaceLegInsert } from '@/types'
+import { HOME_CLIENT_LABEL, isCardType, isTransportType, type PlaceLegInsert } from '@/types'
 
 /** Trecho como o formulário manda (JSON num campo escondido). */
 type RawLeg = {
@@ -127,6 +129,101 @@ export async function createPlace(_prevState: FormState, formData: FormData): Pr
   revalidatePath('/dashboard/locais')
   revalidatePath('/dashboard/trips')
   return { success: `${name} cadastrado.` }
+}
+
+/**
+ * Salva como local um dia que já foi lançado.
+ *
+ * O caminho mais curto entre "digitei meu dia" e "lanço em dois cliques": em
+ * vez de redigitar a rota no cadastro, aponta-se para um dia que já está
+ * certo. Só a ida é guardada — a volta continua sendo derivada no lançamento,
+ * que é a regra do espelho.
+ *
+ * Os trechos são lidos do banco, não do formulário: o que vale é o que está
+ * gravado, e assim a tela não tem como mandar um trecho que não existe.
+ */
+export async function savePlaceFromDay(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const name = normalizeText(formData.get('name'))
+  if (!name) return { fieldErrors: { name: 'Dê um nome ao local (ex: Tecnoarte).' } }
+
+  const limiteNome = tooLong(name, MAX_LENGTHS.local, 'O nome do local')
+  if (limiteNome) return { fieldErrors: { name: limiteNome } }
+
+  const date = String(formData.get('date') ?? '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { error: 'Dia inválido.' }
+
+  const { supabase, user } = await requireUser()
+  if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
+
+  const { data: trips } = await supabase
+    .from('trips')
+    .select('*')
+    .eq('date', date)
+    .order('created_at', { ascending: true })
+    .order('leg_order', { ascending: true })
+
+  if (!trips || trips.length === 0) return { error: 'Esse dia não tem trechos.' }
+
+  const ida = outboundOf(trips)
+
+  // Passagens ativas para o local acompanhar reajuste em vez de congelar o
+  // valor que o trecho copiou no dia do lançamento.
+  const { data: fares } = await supabase
+    .from('fare_prices')
+    .select('group_id, transport, card, value')
+    .eq('active', true)
+
+  const { data: place, error: placeError } = await supabase
+    .from('places')
+    .insert({ user_id: user.id, name })
+    .select('id')
+    .single()
+
+  if (placeError || !place) {
+    const duplicated = placeError?.code === '23505'
+    return duplicated
+      ? { fieldErrors: { name: `Você já tem um local chamado ${name}.` } }
+      : { error: 'Não foi possível salvar o local. Tente de novo.' }
+  }
+
+  const legs: PlaceLegInsert[] = ida.map((trip, position) => ({
+    place_id: place.id,
+    user_id: user.id,
+    position,
+    origin: trip.origin,
+    destination: trip.destination,
+    // 'Residência' é o cliente da volta; num local ele não diz nada, e vazio
+    // faz o lançamento cair no nome do próprio local.
+    client: trip.client === HOME_CLIENT_LABEL ? null : trip.client,
+    transport: trip.transport,
+    line: trip.line,
+    card: trip.card,
+    fare_group_id: matchFareGroup(fares ?? [], {
+      transport: trip.transport,
+      card: trip.card,
+      value: Number(trip.value),
+    }),
+    value: Number(trip.value),
+  }))
+
+  const { error: legsError } = await supabase.from('place_legs').insert(legs)
+
+  if (legsError) {
+    await supabase.from('places').delete().eq('id', place.id)
+    return { error: 'Não foi possível salvar os trechos. Nada foi criado.' }
+  }
+
+  revalidatePath('/dashboard/locais')
+  revalidatePath('/dashboard/trips')
+
+  return {
+    success: `${name} salvo com ${legs.length} ${
+      legs.length === 1 ? 'trecho de ida' : 'trechos de ida'
+    }. A volta continua sendo montada na hora do lançamento.`,
+  }
 }
 
 export async function updatePlace(_prevState: FormState, formData: FormData): Promise<FormState> {
