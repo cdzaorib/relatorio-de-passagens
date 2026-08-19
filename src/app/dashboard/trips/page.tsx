@@ -6,6 +6,8 @@ import { TripForm } from '@/components/trips/TripForm'
 import { TripsTable } from '@/components/trips/TripsTable'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { daysAgoISO, todayISO } from '@/lib/format'
+import { formatPeriodLabel, resolvePeriod } from '@/lib/period'
+import { readStoredPeriod } from '@/lib/period-cookie'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
 import type { PlaceWithLegs } from '@/types'
@@ -17,7 +19,16 @@ const DAYS_SHOWN = 30
 export default async function TripsPage() {
   const supabase = await createClient()
   const today = todayISO()
-  const since = daysAgoISO(DAYS_SHOWN)
+
+  /*
+   * A lista precisa alcançar o período que está sendo fechado, senão uma linha
+   * errada de 40 dias atrás aparece no relatório e não há onde corrigir. Então
+   * o começo é o que vier primeiro: o início do período escolhido ou 30 dias
+   * atrás, o que garante que o lançamento de hoje também apareça.
+   */
+  const period = resolvePeriod({}, await readStoredPeriod(), today)
+  const recente = daysAgoISO(DAYS_SHOWN)
+  const since = period.from < recente ? period.from : recente
 
   const [faresResult, tripsResult, placesResult, legsResult, suggestions] = await Promise.all([
     supabase.from('fare_prices').select('*').eq('active', true).order('label'),
@@ -96,9 +107,11 @@ export default async function TripsPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="font-semibold text-ink">Últimos {DAYS_SHOWN} dias</h2>
+          <h2 className="letreiro text-lg text-ink">Lançamentos</h2>
           <p className="text-sm text-muted">
-            Para escolher um período e gerar o PDF, use o início.
+            Últimos {DAYS_SHOWN} dias e todo o período em fechamento (
+            <span className="dados">{formatPeriodLabel(period)}</span>), para
+            nada do relatório ficar fora de alcance.
           </p>
         </div>
 
