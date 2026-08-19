@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { parseAmount } from '@/lib/format'
 import type { FieldErrors, FormState } from '@/lib/form-state'
-import { primeiraFalha } from '@/lib/query'
+import { descreveFalha, primeiraFalha } from '@/lib/query'
 import { createClient } from '@/lib/supabase/server'
 import { buildDayLegs, legsToTrips, mirrorLegs, type LegDraft } from '@/lib/trips'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
@@ -174,6 +174,42 @@ function readLegs(raw: string): LegDraft[] | FieldErrors {
 // Lançar o dia (a ida inteira, com a volta espelhada opcional)
 // ---------------------------------------------------------------------------
 
+/**
+ * Grava os trechos do dia, sobrevivendo a um banco que ainda não migrou.
+ *
+ * O caminho normal é um insert só, com leg_order dizendo a posição de cada
+ * trecho. Num banco sem essa coluna o PostgREST recusa o lote inteiro, e a
+ * pessoa fica sem conseguir lançar nada — perder o dia de trabalho por causa
+ * de um desempate é caro demais.
+ *
+ * Então a segunda tentativa grava um trecho de cada vez, sem a coluna. Cada
+ * insert é uma transação própria, e now() devolve o horário da transação: os
+ * created_at saem distintos e crescentes, que é exatamente a ordem do
+ * lançamento. É mais lento e mais frágil, mas o dia entra certo enquanto a
+ * migração não roda.
+ */
+async function gravaTrechos(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  trips: ReturnType<typeof legsToTrips>,
+): Promise<{ error: { code: string } | null; semColuna: boolean }> {
+  const { error } = await supabase.from('trips').insert(trips)
+  if (!error) return { error: null, semColuna: false }
+
+  if (!descreveFalha(error).schemaDesatualizado) return { error, semColuna: false }
+
+  for (const trip of trips) {
+    const { leg_order: _posicao, ...semLegOrder } = trip
+    const { error: falha } = await supabase.from('trips').insert(semLegOrder)
+    if (falha) return { error: falha, semColuna: false }
+  }
+
+  return { error: null, semColuna: true }
+}
+
+const AVISO_SEM_COLUNA =
+  ' O banco ainda não tem a coluna de ordem: rode supabase/migrations, senão a ' +
+  'ida e a volta podem trocar de lugar no relatório.'
+
 export async function createTrip(_prevState: FormState, formData: FormData): Promise<FormState> {
   const date = String(formData.get('date') ?? '')
   if (!DATE_PATTERN.test(date)) return { fieldErrors: { date: 'Escolha a data.' } }
@@ -192,7 +228,7 @@ export async function createTrip(_prevState: FormState, formData: FormData): Pro
     .select('id', { count: 'exact', head: true })
     .eq('date', date)
 
-  const { error } = await supabase.from('trips').insert(legsToTrips(dayLegs, user.id, date))
+  const { error, semColuna } = await gravaTrechos(supabase, legsToTrips(dayLegs, user.id, date))
 
   if (error) {
     // "Tente de novo" só ajuda quando tentar de novo pode dar certo.
@@ -204,13 +240,13 @@ export async function createTrip(_prevState: FormState, formData: FormData): Pro
 
   const lancados = `${dayLegs.length} ${dayLegs.length === 1 ? 'trecho lançado' : 'trechos lançados'}.`
 
-  return {
-    success: jaExistiam
-      ? `${lancados} Atenção: este dia já tinha ${jaExistiam} ${
-          jaExistiam === 1 ? 'trecho' : 'trechos'
-        } antes — confira se não duplicou.`
-      : lancados,
-  }
+  const duplicidade = jaExistiam
+    ? ` Atenção: este dia já tinha ${jaExistiam} ${
+        jaExistiam === 1 ? 'trecho' : 'trechos'
+      } antes — confira se não duplicou.`
+    : ''
+
+  return { success: `${lancados}${duplicidade}${semColuna ? AVISO_SEM_COLUNA : ''}` }
 }
 
 // ---------------------------------------------------------------------------
@@ -341,7 +377,7 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
     .select('id', { count: 'exact', head: true })
     .eq('date', date)
 
-  const { error } = await supabase.from('trips').insert(legsToTrips(dayLegs, user.id, date))
+  const { error, semColuna } = await gravaTrechos(supabase, legsToTrips(dayLegs, user.id, date))
 
   if (error) {
     return { error: primeiraFalha(['lançar por local', { error }])!.mensagem }
@@ -354,13 +390,13 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
     dayLegs.length === 1 ? 'trecho lançado' : 'trechos lançados'
   }.`
 
-  return {
-    success: jaExistiam
-      ? `${lancados} Atenção: este dia já tinha ${jaExistiam} ${
-          jaExistiam === 1 ? 'trecho' : 'trechos'
-        } antes — confira se não duplicou.`
-      : lancados,
-  }
+  const duplicidade = jaExistiam
+    ? ` Atenção: este dia já tinha ${jaExistiam} ${
+        jaExistiam === 1 ? 'trecho' : 'trechos'
+      } antes — confira se não duplicou.`
+    : ''
+
+  return { success: `${lancados}${duplicidade}${semColuna ? AVISO_SEM_COLUNA : ''}` }
 }
 
 /** Apaga todos os trechos de um dia de uma vez. */

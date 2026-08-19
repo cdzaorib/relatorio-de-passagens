@@ -12,6 +12,7 @@ import { readStoredPeriod } from '@/lib/period-cookie'
 import { primeiraFalha } from '@/lib/query'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
+import { ordenaTrechos } from '@/lib/trips'
 import type { PlaceWithLegs } from '@/types'
 
 export const metadata: Metadata = { title: 'Trechos' }
@@ -38,10 +39,9 @@ export default async function TripsPage() {
       .from('trips')
       .select('*')
       .gte('date', since)
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: true })
-      // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
-      .order('leg_order', { ascending: true }),
+      // Ordem final em ordenaTrechos; ver a nota lá sobre não pedir leg_order
+      // ao banco.
+      .order('date', { ascending: false }),
     supabase.from('places').select('*').eq('active', true).order('name'),
     supabase.from('place_legs').select('*').order('position', { ascending: true }),
     getSuggestions(supabase),
@@ -54,7 +54,7 @@ export default async function TripsPage() {
     ['trechos dos locais', legsResult],
   )
   const fares = faresResult.data ?? []
-  const trips = tripsResult.data ?? []
+  const trips = ordenaTrechos(tripsResult.data ?? [], true)
   const legs = legsResult.data ?? []
 
   const places: PlaceWithLegs[] = (placesResult.data ?? []).map((place) => ({

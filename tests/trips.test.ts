@@ -1,7 +1,14 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildDayLegs, legsToTrips, mirrorLegs, outboundOf, type LegDraft } from '@/lib/trips'
+import {
+  buildDayLegs,
+  legsToTrips,
+  mirrorLegs,
+  ordenaTrechos,
+  outboundOf,
+  type LegDraft,
+} from '@/lib/trips'
 
 const ida: LegDraft[] = [
   {
@@ -248,5 +255,85 @@ describe('reconhecer a ida dentro de um dia lançado', () => {
 
   test('um trecho só é a ida', () => {
     assert.equal(outboundOf([ida[0]]).length, 1)
+  })
+})
+
+describe('ordem dos trechos fora do banco', () => {
+  const t = (date: string, created_at: string, leg_order: number | null, marca: string) => ({
+    date,
+    created_at,
+    leg_order,
+    marca,
+  })
+
+  // O caso real: os quatro trechos de um dia nascem com created_at idêntico,
+  // porque now() é o horário da transação.
+  const empatados = [
+    t('2026-08-04', '12:43:15.083617', 2, 'volta-barca'),
+    t('2026-08-04', '12:43:15.083617', 0, 'ida-onibus'),
+    t('2026-08-04', '12:43:15.083617', 3, 'volta-onibus'),
+    t('2026-08-04', '12:43:15.083617', 1, 'ida-barca'),
+  ]
+
+  test('leg_order desempata quando created_at é igual', () => {
+    assert.deepEqual(
+      ordenaTrechos(empatados).map((x) => x.marca),
+      ['ida-onibus', 'ida-barca', 'volta-barca', 'volta-onibus'],
+    )
+  })
+
+  test('sem leg_order a ordem cai para created_at, sem quebrar', () => {
+    // É o banco que ainda não migrou: a coluna vem indefinida e o app precisa
+    // continuar lendo, mesmo que a ordem fique só aproximada.
+    const semColuna = [
+      t('2026-08-04', '12:43:38.790707', null, 'segundo'),
+      t('2026-08-04', '12:43:15.083617', null, 'primeiro'),
+    ]
+
+    assert.deepEqual(
+      ordenaTrechos(semColuna).map((x) => x.marca),
+      ['primeiro', 'segundo'],
+    )
+  })
+
+  test('dias recentes primeiro sem inverter a ida e a volta', () => {
+    // A lista de lançamentos mostra o dia mais novo em cima, mas dentro do dia
+    // a ida tem de continuar vindo antes da volta.
+    const dois = [
+      ...empatados,
+      t('2026-08-05', '09:10:00.000000', 1, 'novo-volta'),
+      t('2026-08-05', '09:10:00.000000', 0, 'novo-ida'),
+    ]
+
+    assert.deepEqual(
+      ordenaTrechos(dois, true).map((x) => x.marca),
+      ['novo-ida', 'novo-volta', 'ida-onibus', 'ida-barca', 'volta-barca', 'volta-onibus'],
+    )
+  })
+
+  test('não altera a lista recebida', () => {
+    const copia = structuredClone(empatados)
+    ordenaTrechos(empatados)
+    assert.deepEqual(empatados, copia)
+  })
+
+  test('reproduz o que o banco fazia: mesma ordem do lançamento', () => {
+    const trips = legsToTrips(buildDayLegs(ida, true), 'u1', '2026-07-01').map((trip) => ({
+      ...trip,
+      date: '2026-07-01',
+      created_at: '12:00:00.000000',
+    }))
+
+    const embaralhado = [trips[3], trips[1], trips[0], trips[2]]
+
+    assert.deepEqual(
+      ordenaTrechos(embaralhado).map((t) => [t.origin, t.destination]),
+      [
+        ['Bananal', 'Cocotá'],
+        ['Cocotá', 'Praça XV'],
+        ['Praça XV', 'Cocotá'],
+        ['Cocotá', 'Bananal'],
+      ],
+    )
   })
 })

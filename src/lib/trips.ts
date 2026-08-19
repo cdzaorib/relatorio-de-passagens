@@ -88,3 +88,36 @@ export function outboundOf<T extends Pick<LegDraft, 'origin' | 'destination' | '
 
   return espelhado ? ida : legs
 }
+
+/** O que basta saber de um trecho para pô-lo em ordem. */
+type Ordenavel = {
+  date: string
+  created_at: string
+  leg_order?: number | null
+}
+
+/**
+ * Põe os trechos na ordem do lançamento, em JavaScript.
+ *
+ * Fazer isso no SQL exigiria que a coluna leg_order existisse, e um banco que
+ * ainda não migrou recusa a consulta inteira — o app inteiro fica sem ler nada
+ * por causa de um desempate. Aqui a coluna é opcional: sem ela a ordem só cai
+ * para created_at, que é o comportamento antigo, em vez de quebrar.
+ *
+ * Nenhuma consulta do app é paginada — a tela busca o período inteiro —, então
+ * ordenar depois de buscar dá exatamente o mesmo resultado que ordenar no
+ * banco.
+ */
+export function ordenaTrechos<T extends Ordenavel>(trips: T[], recentesPrimeiro = false): T[] {
+  const sinal = recentesPrimeiro ? -1 : 1
+
+  return [...trips].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -sinal : sinal
+
+    // Dentro do dia a ordem é sempre a do lançamento: a ida antes da volta,
+    // mesmo quando a lista mostra os dias do mais novo para o mais velho.
+    if (a.created_at !== b.created_at) return a.created_at < b.created_at ? -1 : 1
+
+    return (a.leg_order ?? 0) - (b.leg_order ?? 0)
+  })
+}

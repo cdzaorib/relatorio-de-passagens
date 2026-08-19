@@ -10,6 +10,7 @@ import { periodQuery, resolvePeriod } from '@/lib/period'
 import { primeiraFalha } from '@/lib/query'
 import { readStoredPeriod } from '@/lib/period-cookie'
 import { summarize } from '@/lib/report'
+import { ordenaTrechos } from '@/lib/trips'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Início' }
@@ -36,15 +37,14 @@ export default async function DashboardPage({ searchParams }: PageProps) {
       .select('*')
       .gte('date', period.from)
       .lte('date', period.to)
-      .order('date', { ascending: true })
-      .order('created_at', { ascending: true })
-      // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
-      .order('leg_order', { ascending: true }),
+      // A ordem final sai de ordenaTrechos: pedir leg_order ao banco faria a
+      // consulta inteira falhar num banco que ainda não migrou.
+      .order('date', { ascending: true }),
   ])
 
   const falha = primeiraFalha(['perfil', profileResult], ['trechos', tripsResult])
   const profile = profileResult.data
-  const trips = tripsResult.data ?? []
+  const trips = ordenaTrechos(tripsResult.data ?? [])
   const totals = summarize(trips)
 
   return (

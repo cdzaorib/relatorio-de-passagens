@@ -8,7 +8,7 @@ PDF que o financeiro já conhece.
 
 ```bash
 npm run dev        # desenvolvimento
-npm test           # 106 testes, node:test embutido, ~1s
+npm test           # 111 testes, node:test embutido, ~1s
 npm run build      # produção; roda ESLint e TypeScript junto
 ```
 
@@ -49,6 +49,7 @@ período escolhido fica num cookie.
 | --- | --- |
 | Nenhum componente de cliente fala com o Supabase | Permite o cookie de sessão ser `httpOnly`. Um cliente de browser quebraria isso |
 | `trips.value` é cópia, não referência | Reajuste futuro não pode alterar relatório já entregue |
+| Ordem dos trechos sai em JS, não no `order by` | Pedir a coluna ao banco faz a consulta inteira falhar onde ela não existe; nenhuma consulta é paginada, então ordenar depois dá o mesmo resultado |
 | `trips.leg_order` existe apesar de haver `created_at` | `now()` é o horário da transação: os quatro trechos de um dia nascem com `created_at` idêntico e a ordem da ida e da volta se perderia |
 | Identidade dos trechos no formulário é o índice | UUID gerado na renderização diverge entre servidor e cliente e quebra a hidratação |
 | Data do formulário é campo controlado | `form.reset()` a devolveria para hoje no meio de um lançamento em sequência |

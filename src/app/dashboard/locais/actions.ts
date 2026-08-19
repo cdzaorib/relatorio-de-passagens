@@ -6,7 +6,7 @@ import { matchFareGroup } from '@/lib/fares'
 import { parseAmount } from '@/lib/format'
 import type { FormState } from '@/lib/form-state'
 import { createClient } from '@/lib/supabase/server'
-import { outboundOf } from '@/lib/trips'
+import { ordenaTrechos, outboundOf } from '@/lib/trips'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
 import { HOME_CLIENT_LABEL, isCardType, isTransportType, type PlaceLegInsert } from '@/types'
 
@@ -162,12 +162,10 @@ export async function savePlaceFromDay(
     .from('trips')
     .select('*')
     .eq('date', date)
-    .order('created_at', { ascending: true })
-    .order('leg_order', { ascending: true })
 
   if (!trips || trips.length === 0) return { error: 'Esse dia não tem trechos.' }
 
-  const ida = outboundOf(trips)
+  const ida = outboundOf(ordenaTrechos(trips))
 
   // Passagens ativas para o local acompanhar reajuste em vez de congelar o
   // valor que o trecho copiou no dia do lançamento.

@@ -5,6 +5,7 @@ import { buildReportPdf } from '@/lib/pdf'
 import { resolvePeriod } from '@/lib/period'
 import { readStoredPeriod } from '@/lib/period-cookie'
 import { primeiraFalha } from '@/lib/query'
+import { ordenaTrechos } from '@/lib/trips'
 import { summarize } from '@/lib/report'
 import { createClient } from '@/lib/supabase/server'
 
@@ -41,10 +42,7 @@ export async function GET(request: NextRequest) {
       .select('*')
       .gte('date', period.from)
       .lte('date', period.to)
-      .order('date', { ascending: true })
-      .order('created_at', { ascending: true })
-      // Desempata os trechos do mesmo lançamento: created_at é igual nos quatro.
-      .order('leg_order', { ascending: true }),
+      .order('date', { ascending: true }),
   ])
 
   // PDF com zero trecho por causa de erro de banco seria pior do que nenhum
@@ -58,7 +56,7 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  const trips = tripsResult.data ?? []
+  const trips = ordenaTrechos(tripsResult.data ?? [])
   const pdf = await buildReportPdf({
     profile: profileResult.data,
     period,
