@@ -231,6 +231,7 @@ A suíte cobre a lógica que não pode errar:
 | `validation.test.ts`  | Redirecionamento que não escapa do app, máscara de e-mail, erros traduzidos sem vazar detalhe interno |
 | `pdf.test.ts`         | PDF válido, quebra de página e acento que não derruba a geração |
 | `fares.test.ts`       | Passagem preenchendo o trecho e a dedução da linha pelo nome |
+| `route.test.ts`       | A linha de percurso, incluindo o dia com duas saídas separadas |
 
 ## Estrutura
 
