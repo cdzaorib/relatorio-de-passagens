@@ -51,3 +51,17 @@ export function buildRouteStops(steps: RouteStep[]): RouteStop[] {
 
   return paradas
 }
+
+/**
+ * Quantas saídas separadas o dia tem. Uma é o normal: sai de casa, encadeia as
+ * conduções, volta. Duas ou mais podem ser legítimas — foi a um cliente,
+ * voltou, saiu de novo — ou podem ser o sinal de que um trecho está com origem
+ * ou destino trocado.
+ *
+ * O app não decide qual dos dois é: ele conta e mostra, e quem lançou sabe.
+ */
+export function contaSaidas(steps: RouteStep[]): number {
+  if (steps.length === 0) return 0
+
+  return buildRouteStops(steps).filter((parada) => parada.quebra).length + 1
+}

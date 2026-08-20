@@ -8,6 +8,7 @@ import { TripForm } from '@/components/trips/TripForm'
 import { CardTag } from '@/components/ui/CardTag'
 import { DeleteForm } from '@/components/ui/DeleteForm'
 import { RouteLine } from '@/components/ui/RouteLine'
+import { contaSaidas } from '@/lib/route'
 import { formatBRL, formatDate } from '@/lib/format'
 import type { Suggestions } from '@/lib/suggestions'
 import { TRANSPORT_LABELS, type FarePrice, type Trip } from '@/types'
@@ -49,6 +50,13 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
     <div className="space-y-8">
       {days.map(([date, dayTrips]) => {
         const dayTotal = dayTrips.reduce((sum, trip) => sum + Number(trip.value), 0)
+        const passos = dayTrips.map((trip) => ({
+          origin: trip.origin,
+          destination: trip.destination,
+          transport: trip.transport,
+          line: trip.line,
+        }))
+        const saidas = contaSaidas(passos)
 
         return (
           <div key={date}>
@@ -72,15 +80,22 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
             </div>
 
             <div className="mb-3 rounded-lg border border-line bg-surface px-4 py-3">
-              <RouteLine
-                showFares={false}
-                steps={dayTrips.map((trip) => ({
-                  origin: trip.origin,
-                  destination: trip.destination,
-                  transport: trip.transport,
-                  line: trip.line,
-                }))}
-              />
+              <RouteLine showFares={false} steps={passos} />
+
+              {/*
+                Duas saídas num dia podem ser verdade — foi ao cliente, voltou,
+                saiu de novo — ou o sinal de que um trecho está com origem e
+                destino trocados, que foi o que aconteceu no primeiro uso real.
+                O app conta e mostra; quem lançou é quem sabe qual dos dois é.
+              */}
+              {saidas > 1 ? (
+                <p className="mt-3 border-t border-line pt-3 text-xs leading-relaxed text-muted">
+                  Este dia tem <strong className="font-medium text-ink">{saidas} saídas</strong>{' '}
+                  separadas: em algum ponto o trecho seguinte não parte de onde o
+                  anterior chegou. Se foi um percurso só, algum trecho está com a
+                  origem ou o destino trocados.
+                </p>
+              ) : null}
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-line bg-surface">

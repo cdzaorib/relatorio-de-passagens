@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildRouteStops, type RouteStep } from '@/lib/route'
+import { buildRouteStops, type RouteStep, contaSaidas } from '@/lib/route'
 
 function trecho(origin: string, destination: string, transport: RouteStep['transport'] = 'onibus'): RouteStep {
   return { origin, destination, transport }
@@ -79,5 +79,45 @@ describe('paradas da linha de percurso', () => {
 
   test('sem trecho, sem parada', () => {
     assert.deepEqual(buildRouteStops([]), [])
+  })
+})
+
+describe('quantas saídas o dia teve', () => {
+  const passo = (origin: string, destination: string) => ({
+    origin,
+    destination,
+    transport: 'onibus' as const,
+  })
+
+  test('percurso contínuo é uma saída só', () => {
+    const dia = [
+      passo('Bananal', 'Cocotá'),
+      passo('Cocotá', 'Praça XV'),
+      passo('Praça XV', 'Cocotá'),
+      passo('Cocotá', 'Bananal'),
+    ]
+
+    assert.equal(contaSaidas(dia), 1)
+  })
+
+  test('o dia 04/08 que veio errado conta duas', () => {
+    // Duas viagens fechadas em si, do jeito que o lançamento trecho a trecho
+    // produzia. É o sinal que teria denunciado o problema na hora.
+    const dia = [
+      passo('Bananal', 'Cocotá'),
+      passo('Cocotá', 'Bananal'),
+      passo('Cocotá', 'Praça XV'),
+      passo('Praça XV', 'Cocotá'),
+    ]
+
+    assert.equal(contaSaidas(dia), 2)
+  })
+
+  test('dia vazio não tem saída', () => {
+    assert.equal(contaSaidas([]), 0)
+  })
+
+  test('um trecho só é uma saída', () => {
+    assert.equal(contaSaidas([passo('Bananal', 'Centro')]), 1)
   })
 })
