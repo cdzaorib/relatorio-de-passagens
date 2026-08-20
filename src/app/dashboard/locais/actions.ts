@@ -122,7 +122,7 @@ export async function createPlace(_prevState: FormState, formData: FormData): Pr
 
   if (legsError) {
     // Local sem trecho não serve para nada; desfaz para não deixar lixo.
-    await supabase.from('places').delete().eq('id', place.id)
+    await supabase.from('places').delete().eq('id', place.id).eq('user_id', user.id)
     return { error: 'Não foi possível salvar os trechos. Nada foi criado.' }
   }
 
@@ -162,6 +162,7 @@ export async function savePlaceFromDay(
     .from('trips')
     .select('*')
     .eq('date', date)
+    .eq('user_id', user.id)
 
   if (!trips || trips.length === 0) return { error: 'Esse dia não tem trechos.' }
 
@@ -173,6 +174,7 @@ export async function savePlaceFromDay(
     .from('fare_prices')
     .select('group_id, transport, card, value')
     .eq('active', true)
+    .eq('user_id', user.id)
 
   const { data: place, error: placeError } = await supabase
     .from('places')
@@ -210,7 +212,7 @@ export async function savePlaceFromDay(
   const { error: legsError } = await supabase.from('place_legs').insert(legs)
 
   if (legsError) {
-    await supabase.from('places').delete().eq('id', place.id)
+    await supabase.from('places').delete().eq('id', place.id).eq('user_id', user.id)
     return { error: 'Não foi possível salvar os trechos. Nada foi criado.' }
   }
 
@@ -244,11 +246,16 @@ export async function updatePlace(_prevState: FormState, formData: FormData): Pr
     .from('places')
     .select('id')
     .eq('id', id)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   if (!existente) return { error: 'Local não encontrado.' }
 
-  const { error: nameError } = await supabase.from('places').update({ name }).eq('id', id)
+  const { error: nameError } = await supabase
+    .from('places')
+    .update({ name })
+    .eq('id', id)
+    .eq('user_id', user.id)
 
   if (nameError) {
     const duplicated = nameError.code === '23505'
@@ -259,7 +266,7 @@ export async function updatePlace(_prevState: FormState, formData: FormData): Pr
 
   // Trocar os trechos por inteiro é mais simples e seguro do que casar um a um
   // — os trechos do local não são histórico, são um modelo.
-  await supabase.from('place_legs').delete().eq('place_id', id)
+  await supabase.from('place_legs').delete().eq('place_id', id).eq('user_id', user.id)
 
   const { error: legsError } = await supabase
     .from('place_legs')
@@ -285,7 +292,7 @@ export async function deletePlace(
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  const { error } = await supabase.from('places').delete().eq('id', id)
+  const { error } = await supabase.from('places').delete().eq('id', id).eq('user_id', user.id)
 
   if (error) return { error: 'Não foi possível excluir o local. Tente de novo.' }
 

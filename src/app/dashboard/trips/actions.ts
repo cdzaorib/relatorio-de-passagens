@@ -190,6 +190,7 @@ function readLegs(raw: string): LegDraft[] | FieldErrors {
  */
 async function gravaTrechos(
   supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
   trips: ReturnType<typeof legsToTrips>,
 ): Promise<{ error: { code: string } | null; semColuna: boolean }> {
   const { error } = await supabase.from('trips').insert(trips)
@@ -215,7 +216,9 @@ async function gravaTrechos(
       .single()
 
     if (falha) {
-      if (gravados.length > 0) await supabase.from('trips').delete().in('id', gravados)
+      if (gravados.length > 0) {
+        await supabase.from('trips').delete().in('id', gravados).eq('user_id', userId)
+      }
       return { error: falha, semColuna: false }
     }
 
@@ -246,8 +249,9 @@ export async function createTrip(_prevState: FormState, formData: FormData): Pro
     .from('trips')
     .select('id', { count: 'exact', head: true })
     .eq('date', date)
+    .eq('user_id', user.id)
 
-  const { error, semColuna } = await gravaTrechos(supabase, legsToTrips(dayLegs, user.id, date))
+  const { error, semColuna } = await gravaTrechos(supabase, user.id, legsToTrips(dayLegs, user.id, date))
 
   if (error) {
     // "Tente de novo" só ajuda quando tentar de novo pode dar certo.
@@ -295,6 +299,7 @@ export async function updateTrip(_prevState: FormState, formData: FormData): Pro
       value: fields.value,
     })
     .eq('id', id)
+    .eq('user_id', user.id)
 
   if (error) {
     return { error: primeiraFalha(['editar trecho', { error }])!.mensagem }
@@ -315,7 +320,7 @@ export async function deleteTrip(
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  const { error } = await supabase.from('trips').delete().eq('id', id)
+  const { error } = await supabase.from('trips').delete().eq('id', id).eq('user_id', user.id)
 
   if (error) return { error: 'Não foi possível excluir. Tente de novo.' }
 
@@ -343,6 +348,7 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
     .from('places')
     .select('id, name')
     .eq('id', placeId)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   if (!place) return { error: 'Local não encontrado.' }
@@ -351,6 +357,7 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
     .from('place_legs')
     .select('*')
     .eq('place_id', placeId)
+    .eq('user_id', user.id)
     .order('position', { ascending: true })
 
   if (!legs || legs.length === 0) {
@@ -368,6 +375,7 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
       .from('fare_prices')
       .select('group_id, value')
       .eq('active', true)
+      .eq('user_id', user.id)
       .in('group_id', groupIds)
 
     for (const fare of fares ?? []) {
@@ -395,8 +403,9 @@ export async function applyPlace(_prevState: FormState, formData: FormData): Pro
     .from('trips')
     .select('id', { count: 'exact', head: true })
     .eq('date', date)
+    .eq('user_id', user.id)
 
-  const { error, semColuna } = await gravaTrechos(supabase, legsToTrips(dayLegs, user.id, date))
+  const { error, semColuna } = await gravaTrechos(supabase, user.id, legsToTrips(dayLegs, user.id, date))
 
   if (error) {
     return { error: primeiraFalha(['lançar por local', { error }])!.mensagem }
@@ -429,7 +438,11 @@ export async function deleteTripsOfDay(
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
-  const { error } = await supabase.from('trips').delete().eq('date', date)
+  const { error } = await supabase
+    .from('trips')
+    .delete()
+    .eq('date', date)
+    .eq('user_id', user.id)
 
   if (error) return { error: 'Não foi possível excluir o dia. Tente de novo.' }
 

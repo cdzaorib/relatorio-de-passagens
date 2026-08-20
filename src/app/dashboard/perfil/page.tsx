@@ -24,11 +24,13 @@ export default async function PerfilPage() {
     supabase
       .from('fare_prices')
       .select('*')
+      .eq('user_id', userId)
       .eq('active', true)
       .order('label', { ascending: true }),
     supabase
       .from('fare_prices')
       .select('*')
+      .eq('user_id', userId)
       .eq('active', false)
       .order('updated_at', { ascending: false }),
   ])

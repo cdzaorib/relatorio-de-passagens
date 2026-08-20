@@ -35,6 +35,7 @@ export default async function DashboardPage({ searchParams }: PageProps) {
     supabase
       .from('trips')
       .select('*')
+      .eq('user_id', user!.id)
       .gte('date', period.from)
       .lte('date', period.to)
       // A ordem final sai de ordenaTrechos: pedir leg_order ao banco faria a

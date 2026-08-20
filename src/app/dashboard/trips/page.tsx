@@ -21,6 +21,15 @@ const DAYS_SHOWN = 30
 
 export default async function TripsPage() {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // O id do usuário entra em toda consulta. A RLS já garante o isolamento,
+  // mas ela é uma camada só: uma política removida por engano transformaria
+  // cada consulta destas em vazamento silencioso. Com o filtro explícito, o
+  // pior caso vira lista vazia em vez de dado de outra pessoa.
+  const userId = user!.id
   const today = todayISO()
 
   /*
@@ -34,17 +43,18 @@ export default async function TripsPage() {
   const since = period.from < recente ? period.from : recente
 
   const [faresResult, tripsResult, placesResult, legsResult, suggestions] = await Promise.all([
-    supabase.from('fare_prices').select('*').eq('active', true).order('label'),
+    supabase.from('fare_prices').select('*').eq('user_id', userId).eq('active', true).order('label'),
     supabase
       .from('trips')
       .select('*')
+      .eq('user_id', userId)
       .gte('date', since)
       // Ordem final em ordenaTrechos; ver a nota lá sobre não pedir leg_order
       // ao banco.
       .order('date', { ascending: false }),
-    supabase.from('places').select('*').eq('active', true).order('name'),
-    supabase.from('place_legs').select('*').order('position', { ascending: true }),
-    getSuggestions(supabase),
+    supabase.from('places').select('*').eq('user_id', userId).eq('active', true).order('name'),
+    supabase.from('place_legs').select('*').eq('user_id', userId).order('position', { ascending: true }),
+    getSuggestions(supabase, userId),
   ])
 
   const falha = primeiraFalha(

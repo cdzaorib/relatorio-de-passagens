@@ -147,6 +147,7 @@ export async function updateFarePrice(
     .from('fare_prices')
     .select('id, group_id, value')
     .eq('id', id)
+    .eq('user_id', user.id)
     .maybeSingle()
 
   if (loadError || !current) {
@@ -158,6 +159,7 @@ export async function updateFarePrice(
       .from('fare_prices')
       .update({ label: fields.label, transport: fields.transport, card: fields.card })
       .eq('id', id)
+      .eq('user_id', user.id)
 
     if (error) return { error: 'Não foi possível salvar a alteração.' }
 
@@ -180,10 +182,11 @@ export async function updateFarePrice(
     .from('fare_prices')
     .update({ active: false })
     .eq('id', current.id)
+    .eq('user_id', user.id)
 
   if (deactivateError) {
     // Desfaz para não sobrar dois preços ativos do mesmo grupo.
-    await supabase.from('fare_prices').delete().eq('id', inserted.id)
+    await supabase.from('fare_prices').delete().eq('id', inserted.id).eq('user_id', user.id)
     return { error: 'Não foi possível concluir o reajuste. Nada foi alterado.' }
   }
 
@@ -210,6 +213,7 @@ export async function archiveFarePrice(
     .from('fare_prices')
     .update({ active: false })
     .eq('group_id', groupId)
+    .eq('user_id', user.id)
 
   if (error) return { error: 'Não foi possível arquivar. Tente de novo.' }
 

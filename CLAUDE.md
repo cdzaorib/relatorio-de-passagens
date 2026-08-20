@@ -35,6 +35,12 @@ derive o cartão do transporte na hora de salvar.
 registro atual e cria outro no mesmo `group_id`. O trecho já lançado guarda
 sua própria cópia do valor, então relatório fechado não muda sozinho.
 
+**Toda consulta filtra por `user_id`, mesmo com RLS.** A RLS é a defesa real,
+mas é uma camada só: uma política removida por engano transformaria
+`delete().eq('date', date)` em "apaga o dia de todo mundo". Com o filtro
+explícito o pior caso vira lista vazia. `getSuggestions` exige o id na
+assinatura porque o texto dela vai direto para o autocomplete.
+
 **Falha de banco nunca vira lista vazia.** `data ?? []` transforma erro em
 "nenhum trecho lançado", e a pessoa conclui que o app perdeu o trabalho dela.
 Toda leitura passa por `primeiraFalha` (`src/lib/query.ts`) e a tela diz o que

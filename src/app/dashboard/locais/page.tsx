@@ -13,12 +13,21 @@ export const metadata: Metadata = { title: 'Locais' }
 
 export default async function LocaisPage() {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // O id do usuário entra em toda consulta. A RLS já garante o isolamento,
+  // mas ela é uma camada só: uma política removida por engano transformaria
+  // cada consulta destas em vazamento silencioso. Com o filtro explícito, o
+  // pior caso vira lista vazia em vez de dado de outra pessoa.
+  const userId = user!.id
 
   const [faresResult, placesResult, legsResult, suggestions] = await Promise.all([
-    supabase.from('fare_prices').select('*').eq('active', true).order('label'),
-    supabase.from('places').select('*').eq('active', true).order('name'),
-    supabase.from('place_legs').select('*').order('position', { ascending: true }),
-    getSuggestions(supabase),
+    supabase.from('fare_prices').select('*').eq('user_id', userId).eq('active', true).order('label'),
+    supabase.from('places').select('*').eq('user_id', userId).eq('active', true).order('name'),
+    supabase.from('place_legs').select('*').eq('user_id', userId).order('position', { ascending: true }),
+    getSuggestions(supabase, userId),
   ])
 
   const falha = primeiraFalha(
