@@ -5,6 +5,30 @@ export type Period = { from: string; to: string }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
+/**
+ * Data que existe de verdade, não só bem formada.
+ *
+ * O formato sozinho aceita 2026-13-45, e o período vem da URL, que qualquer
+ * um edita. Uma data impossível seguia para a consulta e o Postgres recusava:
+ * a tela do relatório inteira quebrava por causa de um endereço mal digitado,
+ * quando o certo é cair no período padrão.
+ *
+ * A volta pelo Date confere: 2026-02-31 vira 3 de março e o texto não bate
+ * mais com o original.
+ */
+function dataExiste(iso: string): boolean {
+  if (!ISO_DATE.test(iso)) return false
+
+  const [ano, mes, dia] = iso.split('-').map(Number)
+  const data = new Date(Date.UTC(ano, mes - 1, dia))
+
+  return (
+    data.getUTCFullYear() === ano &&
+    data.getUTCMonth() === mes - 1 &&
+    data.getUTCDate() === dia
+  )
+}
+
 function pad(value: number): string {
   return String(value).padStart(2, '0')
 }
@@ -53,7 +77,7 @@ export function parsePeriodParams(params: { de?: string; ate?: string }): Period
   const from = params.de ?? ''
   const to = params.ate ?? ''
 
-  if (!ISO_DATE.test(from) || !ISO_DATE.test(to)) return null
+  if (!dataExiste(from) || !dataExiste(to)) return null
 
   return normalize(from, to)
 }
@@ -63,7 +87,7 @@ function parseStoredPeriod(raw: string | undefined): Period | null {
   if (!raw) return null
 
   const [from, to] = raw.split('..')
-  if (!ISO_DATE.test(from ?? '') || !ISO_DATE.test(to ?? '')) return null
+  if (!dataExiste(from ?? '') || !dataExiste(to ?? '')) return null
 
   return normalize(from, to)
 }

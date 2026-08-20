@@ -391,3 +391,37 @@ describe('ordem estável quando não há como saber a ordem certa', () => {
     )
   })
 })
+
+describe('trecho movido para outro dia', () => {
+  test('entra no fim do dia de destino, não no começo', () => {
+    // O bug: a ordem sai de created_at antes de leg_order, e um trecho movido
+    // carrega o created_at do dia de onde saiu — mais antigo que tudo no
+    // destino. Corrigir a data jogava o trecho para antes da ida que já estava
+    // lá, e a linha de percurso do dia começava por ele.
+    const diaDestino = [
+      { id: 'a', date: '2026-08-05', created_at: '2026-08-05T12:00:00Z', leg_order: 0 },
+      { id: 'b', date: '2026-08-05', created_at: '2026-08-05T12:00:00Z', leg_order: 1 },
+    ]
+
+    const movidoSemCorrigir = {
+      id: 'x',
+      date: '2026-08-05',
+      created_at: '2026-08-01T09:00:00Z',
+      leg_order: 0,
+    }
+
+    assert.equal(
+      ordenaTrechos([...diaDestino, movidoSemCorrigir])[0].id,
+      'x',
+      'este é o comportamento errado que a correção evita',
+    )
+
+    // Com o created_at reescrito no momento da edição, ele vai para o fim.
+    const movidoCorrigido = { ...movidoSemCorrigir, created_at: '2026-08-06T08:00:00Z' }
+
+    assert.deepEqual(
+      ordenaTrechos([...diaDestino, movidoCorrigido]).map((t) => t.id),
+      ['a', 'b', 'x'],
+    )
+  })
+})

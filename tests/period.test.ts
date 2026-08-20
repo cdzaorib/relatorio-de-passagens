@@ -115,3 +115,29 @@ describe('formatação do período', () => {
     )
   })
 })
+
+describe('data que não existe não vira período', () => {
+  test('mês 13 e dia 45 caem no padrão em vez de ir para o banco', () => {
+    // O período vem da URL, que qualquer um edita. Antes, a data impossível
+    // seguia para a consulta e o Postgres recusava: a tela do relatório
+    // quebrava inteira por causa de um endereço mal digitado.
+    assert.equal(parsePeriodParams({ de: '2026-13-01', ate: '2026-13-15' }), null)
+    assert.equal(parsePeriodParams({ de: '2026-08-45', ate: '2026-08-46' }), null)
+  })
+
+  test('31 de fevereiro é recusado', () => {
+    assert.equal(parsePeriodParams({ de: '2026-02-31', ate: '2026-03-01' }), null)
+  })
+
+  test('29 de fevereiro vale em ano bissexto e não em ano comum', () => {
+    assert.notEqual(parsePeriodParams({ de: '2028-02-29', ate: '2028-03-01' }), null)
+    assert.equal(parsePeriodParams({ de: '2027-02-29', ate: '2027-03-01' }), null)
+  })
+
+  test('data real continua passando', () => {
+    assert.deepEqual(parsePeriodParams({ de: '2026-08-01', ate: '2026-08-15' }), {
+      from: '2026-08-01',
+      to: '2026-08-15',
+    })
+  })
+})

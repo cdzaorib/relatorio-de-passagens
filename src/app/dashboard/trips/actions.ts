@@ -286,9 +286,34 @@ export async function updateTrip(_prevState: FormState, formData: FormData): Pro
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Sua sessão expirou. Entre de novo.' }
 
+  const { data: atual } = await supabase
+    .from('trips')
+    .select('date')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (!atual) return { error: 'Trecho não encontrado.' }
+
+  /*
+   * Mudou de dia: o trecho entra no fim do dia novo, não no começo.
+   *
+   * A ordem dentro do dia sai de created_at antes de leg_order, porque
+   * created_at é o que separa um lançamento do outro. Um trecho movido carrega
+   * o created_at do dia de onde saiu, que é mais antigo que tudo no destino —
+   * então corrigir a data de um trecho o jogava para antes da ida que já
+   * estava lá, e a linha de percurso do dia começava por ele.
+   *
+   * Reescrever o created_at o coloca onde ele de fato entrou. Quando foi
+   * gravado de verdade continua registrado em updated_at, e ninguém consulta
+   * created_at para outra coisa além de ordenar.
+   */
+  const mudouDeDia = atual.date !== fields.date
+
   const { error } = await supabase
     .from('trips')
     .update({
+      ...(mudouDeDia ? { created_at: new Date().toISOString() } : {}),
       date: fields.date,
       origin: fields.origin,
       destination: fields.destination,
