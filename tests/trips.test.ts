@@ -5,6 +5,7 @@ import {
   buildDayLegs,
   faltaLegOrder,
   legsToTrips,
+  ordemAmbigua,
   mirrorLegs,
   ordenaTrechos,
   outboundOf,
@@ -423,5 +424,41 @@ describe('trecho movido para outro dia', () => {
       ordenaTrechos([...diaDestino, movidoCorrigido]).map((t) => t.id),
       ['a', 'b', 'x'],
     )
+  })
+})
+
+describe('quando a ordem do dia é mesmo ambígua', () => {
+  const t = (created_at: string, leg_order?: number) => ({ created_at, leg_order })
+
+  test('insert em lote sem a coluna: created_at empatado, ordem ambígua', () => {
+    // É o dia 04/08 que veio errado: os quatro trechos nasceram na mesma
+    // transação e now() devolve o horário dela, não o de cada comando.
+    const mesmo = '2026-08-04T12:43:15.083617Z'
+
+    assert.equal(ordemAmbigua([t(mesmo), t(mesmo), t(mesmo), t(mesmo)]), true)
+  })
+
+  test('gravado um trecho de cada vez: ordem preservada, sem aviso', () => {
+    // O caminho de contingência de hoje. Cada insert é uma transação própria,
+    // então os horários saem distintos e crescentes — a ordem está certa mesmo
+    // sem a coluna, e avisar seria assustar à toa.
+    const dia = [
+      t('2026-08-20T18:00:01.100Z'),
+      t('2026-08-20T18:00:01.400Z'),
+      t('2026-08-20T18:00:01.700Z'),
+      t('2026-08-20T18:00:02.000Z'),
+    ]
+
+    assert.equal(ordemAmbigua(dia), false)
+  })
+
+  test('com a coluna presente nunca é ambíguo', () => {
+    const mesmo = '2026-08-04T12:43:15.083617Z'
+
+    assert.equal(ordemAmbigua([t(mesmo, 0), t(mesmo, 1)]), false)
+  })
+
+  test('um trecho sozinho não tem ordem para errar', () => {
+    assert.equal(ordemAmbigua([t('2026-08-04T12:00:00Z')]), false)
   })
 })

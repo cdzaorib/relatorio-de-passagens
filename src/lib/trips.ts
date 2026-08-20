@@ -150,3 +150,25 @@ export function ordenaTrechos<T extends Ordenavel>(trips: T[], recentesPrimeiro 
 export function faltaLegOrder(trips: { leg_order?: number | null }[]): boolean {
   return trips.length > 0 && trips.every((trip) => trip.leg_order === undefined)
 }
+
+/**
+ * Diz se a ordem de um dia é realmente ambígua.
+ *
+ * Sem `leg_order`, a ordem sai de `created_at` — e isso só é insuficiente
+ * quando dois trechos do dia nasceram no mesmo instante, o que acontece
+ * quando eles entraram no banco num insert único: `now()` é o horário da
+ * transação, não do comando.
+ *
+ * Um dia gravado um trecho de cada vez — o caminho de contingência de hoje —
+ * tem `created_at` distintos e crescentes, então a ordem está certa mesmo sem
+ * a coluna. Avisar sobre ele seria assustar à toa, e aviso que assusta à toa
+ * é aviso que se aprende a ignorar.
+ */
+export function ordemAmbigua(trips: { created_at: string; leg_order?: number | null }[]): boolean {
+  if (trips.length < 2) return false
+
+  // Com a coluna presente não há ambiguidade: ela é o desempate.
+  if (trips.some((trip) => trip.leg_order !== undefined)) return false
+
+  return new Set(trips.map((trip) => trip.created_at)).size < trips.length
+}

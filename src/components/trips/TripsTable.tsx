@@ -9,6 +9,7 @@ import { CardTag } from '@/components/ui/CardTag'
 import { DeleteForm } from '@/components/ui/DeleteForm'
 import { RouteLine } from '@/components/ui/RouteLine'
 import { contaSaidas } from '@/lib/route'
+import { ordemAmbigua } from '@/lib/trips'
 import { formatBRL, formatDate } from '@/lib/format'
 import type { Suggestions } from '@/lib/suggestions'
 import { TRANSPORT_LABELS, type FarePrice, type Trip } from '@/types'
@@ -57,6 +58,7 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
           line: trip.line,
         }))
         const saidas = contaSaidas(passos)
+        const ordemDuvidosa = ordemAmbigua(dayTrips)
 
         return (
           <div key={date}>
@@ -88,6 +90,22 @@ export function TripsTable({ trips, fares, suggestions, today }: TripsTableProps
                 destino trocados, que foi o que aconteceu no primeiro uso real.
                 O app conta e mostra; quem lançou é quem sabe qual dos dois é.
               */}
+              {/*
+                Só este dia é que tem ordem duvidosa: os trechos entraram num
+                insert único, com created_at idêntico, e sem leg_order não há
+                como desempatar. Dias gravados um a um não caem aqui — avisar
+                sobre eles seria assustar quem já está certo.
+              */}
+              {ordemDuvidosa ? (
+                <p className="mt-3 border-t border-line pt-3 text-xs leading-relaxed text-onibus-ink">
+                  <strong className="font-medium">A ordem deste dia pode estar trocada.</strong>{' '}
+                  Os trechos foram gravados no mesmo instante, antes de o app passar
+                  a numerá-los, então o banco não tem como saber qual veio primeiro.
+                  Confira a sequência acima; se estiver errada, apague o dia e lance
+                  de novo.
+                </p>
+              ) : null}
+
               {saidas > 1 ? (
                 <p className="mt-3 border-t border-line pt-3 text-xs leading-relaxed text-muted">
                   Este dia tem <strong className="font-medium text-ink">{saidas} saídas</strong>{' '}

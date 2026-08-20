@@ -228,9 +228,19 @@ async function gravaTrechos(
   return { error: null, semColuna: true }
 }
 
+/*
+ * Este dia está certo, e a mensagem precisa dizer isso.
+ *
+ * A versão anterior avisava que "a ida e a volta podem trocar de lugar" — e
+ * era falso justamente aqui: sem a coluna, os trechos entram um de cada vez,
+ * cada insert é uma transação própria, e os created_at saem distintos e
+ * crescentes. A ordem está preservada. Assustar quem acabou de acertar é o
+ * jeito mais rápido de ensinar a pessoa a ignorar o aviso seguinte.
+ */
 const AVISO_SEM_COLUNA =
-  ' O banco ainda não tem a coluna de ordem: rode supabase/migrations, senão a ' +
-  'ida e a volta podem trocar de lugar no relatório.'
+  ' O banco ainda não tem a coluna de ordem, então os trechos foram gravados ' +
+  'um a um para manter a sequência — este dia está na ordem certa. Rodar ' +
+  'supabase/migrations/001-leg-order.sql deixa de precisar desse contorno.'
 
 export async function createTrip(_prevState: FormState, formData: FormData): Promise<FormState> {
   const date = String(formData.get('date') ?? '')

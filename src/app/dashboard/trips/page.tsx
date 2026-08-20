@@ -89,9 +89,11 @@ export default async function TripsPage() {
       {faltaLegOrder(trips) ? (
         <div className="rounded-lg border border-onibus/30 bg-onibus-soft px-4 py-3 text-sm leading-relaxed text-onibus-ink">
           <strong className="font-medium">O banco está sem a coluna de ordem.</strong> Nada
-          está quebrado e nada foi perdido — o app grava e lê normalmente. Só que,
-          sem ela, a ida e a volta de um mesmo lançamento podem trocar de lugar
-          no relatório. Para resolver de vez, rode{' '}
+          está quebrado e nada foi perdido: o app grava um trecho de cada vez para
+          manter a sequência, e os dias lançados assim estão na ordem certa. O que
+          essa coluna resolve é o resto — dias gravados de uma vez só, antes deste
+          contorno, cuja ordem o banco não tem como saber. Eles aparecem marcados
+          na lista abaixo. Para acabar com isso, rode{' '}
           <code className="dados">supabase/migrations/001-leg-order.sql</code> no SQL
           Editor do Supabase.
         </div>
