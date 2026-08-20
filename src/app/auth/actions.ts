@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 
 import { getSiteUrl } from '@/lib/env'
 import type { FormState } from '@/lib/form-state'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { checkRateLimit, origemDaRequisicao } from '@/lib/rate-limit'
 import { createClient } from '@/lib/supabase/server'
 import {
   normalizeEmail,
@@ -41,8 +41,7 @@ export async function login(_prevState: FormState, formData: FormData): Promise<
    * O limitador vive na memória da instância, então em serverless ele não é
    * garantia — é o freio óbvio. A trava de verdade é a do Supabase Auth.
    */
-  const headerList = await headers()
-  const origem = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'desconhecida'
+  const origem = origemDaRequisicao(await headers())
 
   const dentroDoLimite =
     checkRateLimit(`login:origem:${origem}`, 30, 15 * 60 * 1000) &&
@@ -87,6 +86,21 @@ export async function signup(_prevState: FormState, formData: FormData): Promise
   const confirmationError = validatePasswordConfirmation(password, passwordConfirmation)
   if (confirmationError) return { error: confirmationError, values }
 
+  /*
+   * O cadastro é a única porta aberta do app: não exige sessão e está numa
+   * URL pública. Sem freio, ela serve para duas coisas que ninguém quer —
+   * criar conta em massa, e descobrir quais e-mails já existem, já que a
+   * mensagem de "já existe uma conta" responde isso a cada tentativa.
+   *
+   * O freio é por origem, nunca por e-mail: por e-mail, bastaria tentar
+   * cadastrar o endereço de alguém para impedir essa pessoa de se cadastrar.
+   */
+  const origem = origemDaRequisicao(await headers())
+
+  if (!checkRateLimit(`signup:origem:${origem}`, 5, 60 * 60 * 1000)) {
+    return { error: 'Muitos cadastros seguidos daqui. Tente de novo mais tarde.', values }
+  }
+
   const supabase = await createClient()
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -128,13 +142,18 @@ export async function requestPasswordReset(
   const emailError = validateEmail(email)
   if (emailError) return { error: emailError, values }
 
-  const headerList = await headers()
-  const ip = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'desconhecido'
+  const origem = origemDaRequisicao(await headers())
 
-  // 3 pedidos a cada 15 minutos por e-mail e por origem.
+  /*
+   * 3 pedidos a cada 15 minutos por e-mail e 10 por origem. Aqui o limite por
+   * e-mail é proposital, ao contrário do login: sem ele, o formulário vira
+   * máquina de encher a caixa de entrada de alguém. O preço é que dá para
+   * atrasar a recuperação de senha de uma pessoa por 15 minutos — bem menos
+   * grave do que bombardeá-la de e-mail.
+   */
   const allowed =
     checkRateLimit(`reset:email:${email}`, 3, 15 * 60 * 1000) &&
-    checkRateLimit(`reset:ip:${ip}`, 10, 15 * 60 * 1000)
+    checkRateLimit(`reset:origem:${origem}`, 10, 15 * 60 * 1000)
 
   if (!allowed) {
     return { error: 'Muitos pedidos seguidos. Espere alguns minutos e tente de novo.', values }
