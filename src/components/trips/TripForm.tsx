@@ -21,6 +21,7 @@ import {
   DEFAULT_CARD_BY_TRANSPORT,
   TRANSPORT_LABELS,
   TRANSPORT_OPTIONS,
+  hasLine,
   type CardType,
   type FarePrice,
   type TransportType,
@@ -290,7 +291,7 @@ export function TripForm({ fares, suggestions, today, trip, onDone, onCancel }: 
               placeholder="323"
               maxLength={MAX_LENGTHS.linha}
               autoComplete="off"
-              hint="Deixe vazio na barca."
+              hint={hasLine(trecho.transport) ? 'Linha, ramal ou número.' : 'A barca não tem linha.'}
               error={erroDoCampo(indice, 'line')}
             />
 

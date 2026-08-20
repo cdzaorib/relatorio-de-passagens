@@ -8,7 +8,7 @@ PDF que o financeiro já conhece.
 
 ```bash
 npm run dev        # desenvolvimento
-npm test           # 148 testes, node:test embutido, ~1s
+npm test           # 156 testes, node:test embutido, ~1s
 npm run build      # produção; roda ESLint e TypeScript junto
 ```
 
@@ -30,6 +30,13 @@ teste de regressão em `tests/trips.test.ts`.
 **Cartão é escolha, não consequência.** Ônibus sugere JAÉ e barca sugere RIO
 CARD, mas o campo é editável: a linha 143C é ônibus paga no RIO CARD. Nunca
 derive o cartão do transporte na hora de salvar.
+
+**Cinco meios, uma cor cada.** Ônibus, barca, metrô, trem e VLT. A cor não é
+enfeite: com cinco meios a coluna vira soletração, e o tom deixa ler de longe.
+Cada um tem duas forças — o vivo (~3,3:1) é traço, o escuro (>7:1) é texto
+pequeno. Meio novo exige rótulo, cartão padrão, tom no `RouteLine`, tom no PDF
+e valor no enum do banco; `tests/transportes.test.ts` cobre os que estão no
+código, mas o enum é migração.
 
 **Reajuste não sobrescreve preço.** Editar o valor de uma passagem desativa o
 registro atual e cria outro no mesmo `group_id`. O trecho já lançado guarda

@@ -14,7 +14,7 @@
 do $$
 begin
   if not exists (select 1 from pg_type where typname = 'transport_type') then
-    create type public.transport_type as enum ('onibus', 'barca');
+    create type public.transport_type as enum ('onibus', 'barca', 'metro', 'trem', 'vlt');
   end if;
 end $$;
 
@@ -102,6 +102,11 @@ comment on table  public.trips is 'Trechos de deslocamento; cada linha vira uma 
 comment on column public.trips.line is 'Número da linha do ônibus. Fica nulo/vazio em barca.';
 comment on column public.trips.leg_order is
   'Ordem dentro do lançamento. now() é o horário da transação, então os quatro trechos de um dia nascem com created_at idêntico; sem esta coluna a ordem da ida e da volta se perde.';
+
+-- Bancos criados quando só existiam ônibus e barca.
+alter type public.transport_type add value if not exists 'metro';
+alter type public.transport_type add value if not exists 'trem';
+alter type public.transport_type add value if not exists 'vlt';
 
 -- Bancos criados antes desta coluna.
 alter table public.trips add column if not exists leg_order smallint not null default 0;

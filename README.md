@@ -182,6 +182,25 @@ O campo de valor aceita `4,70`, `R$ 4,70`, `4.70` ou `1.234,56`. Recusa
 `1.234`: em português é mil duzentos e trinta e quatro, em inglês é um e
 vinte e três, e chutar em dinheiro é pior do que pedir para digitar de novo.
 
+## Meios de transporte
+
+Ônibus, barca, metrô, trem e VLT. Cada um tem um tom próprio na linha de
+percurso e na coluna TRANSPORTE do PDF — com cinco meios, ler a coluna vira
+soletrar palavra por palavra, e a cor resolve de longe. O nome continua
+escrito, então a impressão em preto e branco não perde nada.
+
+O cartão sugerido é RIO CARD em tudo menos no ônibus municipal, que sai no
+JAÉ. Continua sendo sugestão: **cartão é escolha, não consequência** — a linha
+143C é ônibus paga no RIO CARD.
+
+A barca é o único meio sem linha, porque o trajeto é o próprio par de
+estações. Metrô, trem e VLT têm: Linha 2, ramal Santa Cruz, VLT 1.
+
+Bancos criados antes disso precisam de
+`supabase/migrations/003-metro-trem-vlt.sql` — sem ele o Postgres não conhece
+a palavra `metro` e recusa o lançamento. A mensagem de erro diz isso e aponta
+o arquivo.
+
 ## Lançamento de trechos
 
 Em `/dashboard/trips`, dois caminhos:

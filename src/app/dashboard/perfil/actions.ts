@@ -7,13 +7,15 @@ import type { FieldErrors, FormState } from '@/lib/form-state'
 import { primeiraFalha } from '@/lib/query'
 import { createClient } from '@/lib/supabase/server'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
-import { isCardType, isTransportType } from '@/types'
+import { isCardType, isTransportType, type CardType, type TransportType } from '@/types'
 
 /** Dados do formulário de preço, já validados. */
 type FarePriceFields = {
   label: string
-  transport: 'onibus' | 'barca'
-  card: 'riocard' | 'jae'
+  // Repetir a lista aqui já custou caro uma vez: transporte novo entrava no
+  // domínio e este arquivo continuava aceitando só os dois antigos.
+  transport: TransportType
+  card: CardType
   value: number
 }
 

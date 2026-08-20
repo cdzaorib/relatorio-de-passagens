@@ -22,11 +22,30 @@ export function RouteLine({
   const paradas = buildRouteStops(steps)
   if (paradas.length === 0) return null
 
-  const traco = (transport: RouteStep['transport']) =>
-    transport === 'barca' ? 'bg-marca' : 'bg-onibus'
+  /*
+   * Um tom por transporte: a cor é o que deixa ler o dia de longe, sem
+   * soletrar cada rótulo. Duas forças porque servem a coisas diferentes — o
+   * vivo é traço, o escuro é texto pequeno, e usar o vivo em texto sairia
+   * abaixo do contraste mínimo.
+   */
+  const TRACO: Record<RouteStep['transport'], string> = {
+    barca: 'bg-marca',
+    onibus: 'bg-onibus',
+    metro: 'bg-metro',
+    trem: 'bg-trem',
+    vlt: 'bg-vlt',
+  }
 
-  const texto = (transport: RouteStep['transport']) =>
-    transport === 'barca' ? 'text-marca-texto' : 'text-onibus-ink'
+  const TEXTO: Record<RouteStep['transport'], string> = {
+    barca: 'text-marca-texto',
+    onibus: 'text-onibus-ink',
+    metro: 'text-metro-ink',
+    trem: 'text-trem-ink',
+    vlt: 'text-vlt-ink',
+  }
+
+  const traco = (transport: RouteStep['transport']) => TRACO[transport] ?? 'bg-onibus'
+  const texto = (transport: RouteStep['transport']) => TEXTO[transport] ?? 'text-onibus-ink'
 
   return (
     <ol className="flex flex-col sm:flex-row sm:items-start">

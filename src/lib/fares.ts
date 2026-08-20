@@ -1,8 +1,8 @@
-import type { FarePrice } from '@/types'
+import { hasLine, type FarePrice } from '@/types'
 
 /**
  * Tenta achar o número da linha dentro do nome da passagem:
- * 'Ônibus 323' → '323', '143C' → '143C', 'Barca Cocotá' → ''.
+ * 'Ônibus 323' → '323', '143C' → '143C', 'Metrô Linha 2' → '2'.
  * É só um palpite para adiantar o preenchimento — o campo continua editável.
  */
 function guessLineFromLabel(label: string): string {
@@ -16,7 +16,7 @@ export function fareToLegValues(fare: FarePrice) {
     transport: fare.transport,
     card: fare.card,
     value: Number(fare.value),
-    line: fare.transport === 'onibus' ? guessLineFromLabel(fare.label) : '',
+    line: hasLine(fare.transport) ? guessLineFromLabel(fare.label) : '',
     fareGroupId: fare.group_id,
   }
 }

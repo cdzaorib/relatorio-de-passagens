@@ -4,7 +4,7 @@
  * ao mexer no schema, mexa aqui também.
  */
 
-export type TransportType = 'onibus' | 'barca'
+export type TransportType = 'onibus' | 'barca' | 'metro' | 'trem' | 'vlt'
 export type CardType = 'riocard' | 'jae'
 
 export interface Database {

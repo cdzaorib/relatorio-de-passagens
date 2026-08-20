@@ -32,6 +32,21 @@
   --color-onibus-ink: #774d05;
   --color-onibus-soft: #f8f0dc;
 
+  /*
+   * Os trilhos, um tom cada, no mesmo peso dos dois de cima: o vivo por volta
+   * de 3,3:1 sobre branco, que é traço e não texto, e o escuro acima de 7:1,
+   * que é onde o nome do transporte aparece em corpo pequeno.
+   */
+  --color-metro: #4b8ef0;
+  --color-metro-ink: #12508f;
+  --color-metro-soft: #e8f0fd;
+  --color-trem: #9061f9;
+  --color-trem-ink: #4f2a9c;
+  --color-trem-soft: #f0eafe;
+  --color-vlt: #e5537d;
+  --color-vlt-ink: #8f1244;
+  --color-vlt-soft: #fdeaf1;
+
   --color-alerta: #99271f;
   --color-alerta-soft: #fbeceb;
   --color-ok: #1c6b43;

@@ -5,7 +5,7 @@ import type { PostgrestError } from '@supabase/supabase-js'
  * Não interessa se foi leitura ou escrita: interessa se a saída é rodar SQL,
  * mexer na RLS ou simplesmente esperar.
  */
-export type MotivoDaFalha = 'tabela' | 'coluna' | 'permissao' | 'desconhecido'
+export type MotivoDaFalha = 'tabela' | 'coluna' | 'valor' | 'permissao' | 'desconhecido'
 
 export type FalhaDeLeitura = {
   motivo: MotivoDaFalha
@@ -32,6 +32,16 @@ const COLUNA_AUSENTE = new Set([
   'PGRST118', // não deu para ordenar por essa coluna
 ])
 
+/*
+ * O Postgres recusou o texto que mandamos para uma coluna tipada. Na prática,
+ * aqui, é sempre o mesmo caso: um meio de transporte que o enum ainda não
+ * conhece porque a migração não rodou.
+ */
+const VALOR_RECUSADO = new Set([
+  '22P02', // invalid_text_representation
+  '22023', // invalid_parameter_value
+])
+
 const SEM_PERMISSAO = new Set([
   '42501', // insufficient_privilege
   '.42501', // o mesmo, como o PostgREST às vezes o repassa
@@ -46,6 +56,10 @@ const MENSAGENS: Record<MotivoDaFalha, string> = {
     'O banco está atrás do app: falta uma coluna que o código já usa. Abra o SQL ' +
     'Editor do Supabase e rode os arquivos de supabase/migrations. Nada foi ' +
     'perdido — o que já está gravado continua lá.',
+  valor:
+    'O banco recusou um dos valores enviados. Se você escolheu metrô, trem ou ' +
+    'VLT, é porque falta rodar supabase/migrations/003-metro-trem-vlt.sql no ' +
+    'SQL Editor do Supabase — o banco ainda só conhece ônibus e barca.',
   permissao:
     'O banco recusou o acesso aos seus dados. Normalmente é a RLS: rode ' +
     'supabase/schema.sql de novo, que ele recria as políticas.',
@@ -65,6 +79,7 @@ type ErroComCodigo = Pick<PostgrestError, 'code'>
 function classifica(code: string): MotivoDaFalha {
   if (TABELA_AUSENTE.has(code)) return 'tabela'
   if (COLUNA_AUSENTE.has(code)) return 'coluna'
+  if (VALOR_RECUSADO.has(code)) return 'valor'
   if (SEM_PERMISSAO.has(code)) return 'permissao'
   return 'desconhecido'
 }

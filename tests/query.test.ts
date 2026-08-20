@@ -27,6 +27,23 @@ describe('leitura de falha do banco', () => {
     }
   })
 
+  test('valor que o enum não conhece aponta para a migração do transporte', () => {
+    // O app manda 'metro' e o banco ainda só conhece ônibus e barca. Sem esta
+    // classificação, a mensagem seria a genérica e ninguém saberia o que fazer.
+    for (const code of ['22P02', '22023']) {
+      const falha = descreveFalha(erro(code))
+
+      assert.equal(falha.motivo, 'valor', code)
+      assert.match(falha.mensagem, /003-metro-trem-vlt/, code)
+    }
+  })
+
+  test('valor recusado não dispara o contorno do leg_order', () => {
+    // schemaDesatualizado liga o insert um-a-um, que não resolve enum faltando
+    // e só gastaria viagem ao banco antes de falhar igual.
+    assert.equal(descreveFalha(erro('22P02')).schemaDesatualizado, false)
+  })
+
   test('acesso negado aponta para a RLS, não para o app', () => {
     const falha = descreveFalha(erro('42501'))
 

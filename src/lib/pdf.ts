@@ -5,7 +5,13 @@ import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf
 import { formatBRL, formatDate } from '@/lib/format'
 import { formatPeriodLabel, type Period } from '@/lib/period'
 import type { ReportTotals } from '@/lib/report'
-import { CARD_LABELS, TRANSPORT_LABELS, type Profile, type Trip } from '@/types'
+import {
+  CARD_LABELS,
+  TRANSPORT_LABELS,
+  type Profile,
+  type TransportType,
+  type Trip,
+} from '@/types'
 
 // --- Medidas da página (A4 retrato, em pontos) -------------------------------
 const PAGE_WIDTH = 595.28
@@ -29,6 +35,23 @@ const MARCA = rgb(0.055, 0.612, 0.525) // #0e9c86, verde do símbolo
 const MARCA_TEXTO = rgb(0.039, 0.478, 0.412) // #0a7a69, o verde que serve a texto
 const MARCA_SUAVE = rgb(0.902, 0.957, 0.945) // #e6f4f1
 const ONIBUS = rgb(0.467, 0.302, 0.02) // #774d05, o ocre escuro que lê bem
+const METRO = rgb(0.071, 0.314, 0.561) // #12508f
+const TREM = rgb(0.310, 0.165, 0.612) // #4f2a9c
+const VLT = rgb(0.561, 0.071, 0.267) // #8f1244
+
+/*
+ * Um tom por transporte, os mesmos da tela. Com cinco meios, ler a coluna
+ * vira soletrar palavra por palavra; a cor resolve de longe. Todos passam de
+ * 7:1 sobre branco, que é o que o corpo pequeno impresso exige — e o nome do
+ * transporte continua escrito, então a folha em preto e branco não perde nada.
+ */
+const COR_DO_TRANSPORTE: Record<TransportType, ReturnType<typeof rgb>> = {
+  barca: MARCA_TEXTO,
+  onibus: ONIBUS,
+  metro: METRO,
+  trem: TREM,
+  vlt: VLT,
+}
 
 const INK = CARVAO
 const MUTED = rgb(0.42, 0.45, 0.5)
@@ -48,16 +71,27 @@ type Column = {
   cor?: (trip: Trip) => ReturnType<typeof rgb>
 }
 
+/*
+ * As larguras somam exatamente CONTENT_WIDTH. A coluna LINHA foi dimensionada
+ * para número de ônibus e ficou apertada quando o trem entrou: ramal tem nome,
+ * não número, e 'Santa Cruz' saía cortado. O espaço veio dos bairros e do
+ * cliente, que sobravam.
+ */
 const COLUNAS: Column[] = [
   { titulo: 'DATA', largura: 42, valor: (t) => formatDate(t.date).slice(0, 5) },
-  { titulo: 'BAIRRO ORIGEM', largura: 78, valor: (t) => t.origin },
-  { titulo: 'BAIRRO DESTINO', largura: 78, valor: (t) => t.destination },
-  { titulo: 'CLIENTE / EMPRESA', largura: 105, valor: (t) => t.client },
-  { titulo: 'TRANSPORTE', largura: 62, valor: (t) => TRANSPORT_LABELS[t.transport] },
-  { titulo: 'LINHA', largura: 38, valor: (t) => t.line ?? '' },
+  { titulo: 'BAIRRO ORIGEM', largura: 76, valor: (t) => t.origin },
+  { titulo: 'BAIRRO DESTINO', largura: 76, valor: (t) => t.destination },
+  { titulo: 'CLIENTE / EMPRESA', largura: 98, valor: (t) => t.client },
+  {
+    titulo: 'TRANSPORTE',
+    largura: 62,
+    valor: (t) => TRANSPORT_LABELS[t.transport],
+    cor: (t) => COR_DO_TRANSPORTE[t.transport] ?? INK,
+  },
+  { titulo: 'LINHA', largura: 56, valor: (t) => t.line ?? '' },
   {
     titulo: 'CARTÃO',
-    largura: 58,
+    largura: 56,
     valor: (t) => CARD_LABELS[t.card],
     // Mesma regra da tela: verde é RIO CARD, ocre é JAÉ. O nome do cartão
     // continua escrito, então a folha em preto e branco não perde nada.
@@ -65,7 +99,7 @@ const COLUNAS: Column[] = [
   },
   {
     titulo: 'VALOR',
-    largura: 62,
+    largura: 57,
     alinhamento: 'direita',
     valor: (t) => formatBRL(Number(t.value)),
   },
