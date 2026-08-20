@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { parseAmount } from '@/lib/format'
 import type { FieldErrors, FormState } from '@/lib/form-state'
+import { primeiraFalha } from '@/lib/query'
 import { createClient } from '@/lib/supabase/server'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
 import { isCardType, isTransportType } from '@/types'
@@ -85,7 +86,7 @@ export async function updateProfile(_prevState: FormState, formData: FormData): 
     .upsert({ id: user.id, name, supervisor_name: supervisorName })
 
   if (error) {
-    return { error: 'Não foi possível salvar. Tente de novo.', values }
+    return { error: primeiraFalha(['salvar perfil', { error }])!.mensagem, values }
   }
 
   revalidatePath('/dashboard', 'layout')
@@ -113,7 +114,7 @@ export async function createFarePrice(
   const { error } = await supabase.from('fare_prices').insert({ user_id: user.id, ...fields })
 
   if (error) {
-    return { error: 'Não foi possível cadastrar a passagem. Tente de novo.' }
+    return { error: primeiraFalha(['cadastrar passagem', { error }])!.mensagem }
   }
 
   revalidatePath('/dashboard/perfil')
@@ -161,7 +162,7 @@ export async function updateFarePrice(
       .eq('id', id)
       .eq('user_id', user.id)
 
-    if (error) return { error: 'Não foi possível salvar a alteração.' }
+    if (error) return { error: primeiraFalha(['editar passagem', { error }])!.mensagem }
 
     revalidatePath('/dashboard/perfil')
     return { success: `${fields.label} atualizada.` }
@@ -175,7 +176,7 @@ export async function updateFarePrice(
     .single()
 
   if (insertError || !inserted) {
-    return { error: 'Não foi possível registrar o novo valor.' }
+    return { error: primeiraFalha(['reajuste', { error: insertError }])!.mensagem }
   }
 
   const { error: deactivateError } = await supabase
@@ -187,7 +188,8 @@ export async function updateFarePrice(
   if (deactivateError) {
     // Desfaz para não sobrar dois preços ativos do mesmo grupo.
     await supabase.from('fare_prices').delete().eq('id', inserted.id).eq('user_id', user.id)
-    return { error: 'Não foi possível concluir o reajuste. Nada foi alterado.' }
+    const motivo = primeiraFalha(['desativar preço antigo', { error: deactivateError }])!.mensagem
+    return { error: `${motivo} O reajuste foi desfeito: nada mudou.` }
   }
 
   revalidatePath('/dashboard/perfil')
@@ -215,7 +217,7 @@ export async function archiveFarePrice(
     .eq('group_id', groupId)
     .eq('user_id', user.id)
 
-  if (error) return { error: 'Não foi possível arquivar. Tente de novo.' }
+  if (error) return { error: primeiraFalha(['arquivar passagem', { error }])!.mensagem }
 
   revalidatePath('/dashboard/perfil')
   return {}

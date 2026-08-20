@@ -347,7 +347,7 @@ export async function deleteTrip(
 
   const { error } = await supabase.from('trips').delete().eq('id', id).eq('user_id', user.id)
 
-  if (error) return { error: 'Não foi possível excluir. Tente de novo.' }
+  if (error) return { error: primeiraFalha(['excluir trecho', { error }])!.mensagem }
 
   revalidatePath('/dashboard/trips')
   revalidatePath('/dashboard')
@@ -469,7 +469,7 @@ export async function deleteTripsOfDay(
     .eq('date', date)
     .eq('user_id', user.id)
 
-  if (error) return { error: 'Não foi possível excluir o dia. Tente de novo.' }
+  if (error) return { error: primeiraFalha(['excluir o dia', { error }])!.mensagem }
 
   revalidatePath('/dashboard/trips')
   revalidatePath('/dashboard')

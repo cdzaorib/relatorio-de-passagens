@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { matchFareGroup } from '@/lib/fares'
 import { parseAmount } from '@/lib/format'
 import type { FormState } from '@/lib/form-state'
+import { primeiraFalha } from '@/lib/query'
 import { createClient } from '@/lib/supabase/server'
 import { ordenaTrechos, outboundOf } from '@/lib/trips'
 import { MAX_LENGTHS, normalizeText, tooLong } from '@/lib/validation'
@@ -113,7 +114,7 @@ export async function createPlace(_prevState: FormState, formData: FormData): Pr
     const duplicated = placeError?.code === '23505'
     return duplicated
       ? { fieldErrors: { name: `Você já tem um local chamado ${name}.` } }
-      : { error: 'Não foi possível salvar o local. Tente de novo.' }
+      : { error: primeiraFalha(['criar local', { error: placeError }])!.mensagem }
   }
 
   const { error: legsError } = await supabase
@@ -123,7 +124,8 @@ export async function createPlace(_prevState: FormState, formData: FormData): Pr
   if (legsError) {
     // Local sem trecho não serve para nada; desfaz para não deixar lixo.
     await supabase.from('places').delete().eq('id', place.id).eq('user_id', user.id)
-    return { error: 'Não foi possível salvar os trechos. Nada foi criado.' }
+    const motivo = primeiraFalha(['trechos do local', { error: legsError }])!.mensagem
+    return { error: `${motivo} O local não chegou a ser criado.` }
   }
 
   revalidatePath('/dashboard/locais')
@@ -186,7 +188,7 @@ export async function savePlaceFromDay(
     const duplicated = placeError?.code === '23505'
     return duplicated
       ? { fieldErrors: { name: `Você já tem um local chamado ${name}.` } }
-      : { error: 'Não foi possível salvar o local. Tente de novo.' }
+      : { error: primeiraFalha(['criar local', { error: placeError }])!.mensagem }
   }
 
   const legs: PlaceLegInsert[] = ida.map((trip, position) => ({
@@ -213,7 +215,8 @@ export async function savePlaceFromDay(
 
   if (legsError) {
     await supabase.from('places').delete().eq('id', place.id).eq('user_id', user.id)
-    return { error: 'Não foi possível salvar os trechos. Nada foi criado.' }
+    const motivo = primeiraFalha(['trechos do local', { error: legsError }])!.mensagem
+    return { error: `${motivo} O local não chegou a ser criado.` }
   }
 
   revalidatePath('/dashboard/locais')
@@ -294,7 +297,7 @@ export async function deletePlace(
 
   const { error } = await supabase.from('places').delete().eq('id', id).eq('user_id', user.id)
 
-  if (error) return { error: 'Não foi possível excluir o local. Tente de novo.' }
+  if (error) return { error: primeiraFalha(['excluir local', { error }])!.mensagem }
 
   revalidatePath('/dashboard/locais')
   revalidatePath('/dashboard/trips')
