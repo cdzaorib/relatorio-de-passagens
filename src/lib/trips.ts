@@ -91,6 +91,7 @@ export function outboundOf<T extends Pick<LegDraft, 'origin' | 'destination' | '
 
 /** O que basta saber de um trecho para pô-lo em ordem. */
 type Ordenavel = {
+  id?: string
   date: string
   created_at: string
   leg_order?: number | null
@@ -118,7 +119,19 @@ export function ordenaTrechos<T extends Ordenavel>(trips: T[], recentesPrimeiro 
     // mesmo quando a lista mostra os dias do mais novo para o mais velho.
     if (a.created_at !== b.created_at) return a.created_at < b.created_at ? -1 : 1
 
-    return (a.leg_order ?? 0) - (b.leg_order ?? 0)
+    const posicao = (a.leg_order ?? 0) - (b.leg_order ?? 0)
+    if (posicao !== 0) return posicao
+
+    /*
+     * Último desempate, pelo id. Sem ele, dois trechos com created_at igual e
+     * sem leg_order ficam na ordem em que o banco devolveu — que não é
+     * garantida e pode mudar de um carregamento para o outro. O relatório
+     * trocaria de ordem sozinho entre dois downloads do mesmo período, e um
+     * documento que muda sozinho é um documento em que ninguém confia.
+     *
+     * A ordem que sai daqui é arbitrária, mas é sempre a mesma.
+     */
+    return (a.id ?? '') < (b.id ?? '') ? -1 : (a.id ?? '') > (b.id ?? '') ? 1 : 0
   })
 }
 

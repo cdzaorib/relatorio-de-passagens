@@ -358,3 +358,36 @@ describe('banco sem a coluna de ordem', () => {
     assert.equal(faltaLegOrder([]), false)
   })
 })
+
+describe('ordem estável quando não há como saber a ordem certa', () => {
+  const linha = (id: string, created_at: string) => ({
+    id,
+    date: '2026-08-04',
+    created_at,
+    leg_order: undefined,
+  })
+
+  test('empate total sai sempre na mesma ordem', () => {
+    // O banco sem leg_order devolve os quatro trechos em ordem arbitrária, e
+    // ela pode mudar entre dois carregamentos. Arbitrária tudo bem; instável
+    // não: o PDF trocaria de ordem sozinho entre dois downloads.
+    const mesmo = '12:43:15.083617'
+    const uma = [linha('d', mesmo), linha('b', mesmo), linha('a', mesmo), linha('c', mesmo)]
+    const outra = [linha('a', mesmo), linha('c', mesmo), linha('d', mesmo), linha('b', mesmo)]
+
+    assert.deepEqual(
+      ordenaTrechos(uma).map((x) => x.id),
+      ordenaTrechos(outra).map((x) => x.id),
+    )
+  })
+
+  test('o id só desempata depois de created_at e leg_order', () => {
+    const antes = { id: 'zzz', date: '2026-08-04', created_at: '10:00', leg_order: 0 }
+    const depois = { id: 'aaa', date: '2026-08-04', created_at: '11:00', leg_order: 0 }
+
+    assert.deepEqual(
+      ordenaTrechos([depois, antes]).map((x) => x.id),
+      ['zzz', 'aaa'],
+    )
+  })
+})
