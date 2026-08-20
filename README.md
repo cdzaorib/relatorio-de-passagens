@@ -42,6 +42,7 @@ Aplicação em http://localhost:3000.
 | `npm run lint`      | ESLint                                   |
 | `npm run typecheck` | `tsc --noEmit`                           |
 | `npm test`          | Suíte de testes (Node puro, sem runner)  |
+| `npm audit`         | Dependências vulneráveis (o CI quebra em `high`) |
 
 ## Autenticação
 
@@ -95,6 +96,18 @@ origem**. Limitar por e-mail sozinho deixaria qualquer um trancar a conta de
 outra pessoa só errando a senha dela de longe. O limitador vive na memória da
 instância — em serverless é o freio óbvio, não garantia; a trava de verdade é
 a do Supabase Auth.
+
+### Dependências
+
+`npm audit` roda no CI e quebra em severidade alta. As três advisories que
+existiam vinham de dependências internas do Next — `postcss` (travessia de
+caminho ao ler source map, coisa de build) e `sharp` (CVEs do libvips). Nenhuma
+era alcançável aqui: o `postcss` de topo já estava corrigido e **o app não usa
+`next/image`**, então o `sharp` nunca é chamado.
+
+Ainda assim foram fechadas com `overrides` no `package.json`, em vez de
+migrar para o Next 16 só por causa disso. Advisory aberta vira ruído, e ruído
+faz a próxima passar batida.
 
 ### Segredos e privacidade
 

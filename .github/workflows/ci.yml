@@ -19,6 +19,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Dependências vulneráveis
+        # Quebra de propósito. Advisory alta sem correção existe, e quando
+        # aparecer o caminho é o mesmo: override no package.json com o motivo
+        # escrito, ou upgrade. Passar batido é que não pode.
+        run: npm audit --audit-level=high
+
       - name: Testes
         run: npm test
 

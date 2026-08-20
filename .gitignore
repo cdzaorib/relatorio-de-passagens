@@ -11,9 +11,11 @@ next-env.d.ts
 *.tsbuildinfo
 
 # ambiente
-.env
-.env.local
-.env*.local
+# Ignora tudo que comece com .env e reabre só o exemplo. A lista anterior
+# nomeava as variações uma a uma e deixava .env.production de fora — o nome
+# que mais tenta quem vai subir para produção.
+.env*
+!.env.example
 
 # vercel
 .vercel
