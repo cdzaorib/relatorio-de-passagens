@@ -197,10 +197,29 @@ async function gravaTrechos(
 
   if (!descreveFalha(error).schemaDesatualizado) return { error, semColuna: false }
 
+  /*
+   * Um insert por vez não é atômico: falhar no terceiro trecho deixaria meio
+   * dia gravado, e meio dia é pior do que nenhum — a pessoa relançaria por
+   * cima e pediria reembolso duplicado sem perceber. Guardamos os ids para
+   * poder desfazer.
+   */
+  const gravados: string[] = []
+
   for (const trip of trips) {
     const { leg_order: _posicao, ...semLegOrder } = trip
-    const { error: falha } = await supabase.from('trips').insert(semLegOrder)
-    if (falha) return { error: falha, semColuna: false }
+
+    const { data, error: falha } = await supabase
+      .from('trips')
+      .insert(semLegOrder)
+      .select('id')
+      .single()
+
+    if (falha) {
+      if (gravados.length > 0) await supabase.from('trips').delete().in('id', gravados)
+      return { error: falha, semColuna: false }
+    }
+
+    if (data) gravados.push(data.id)
   }
 
   return { error: null, semColuna: true }

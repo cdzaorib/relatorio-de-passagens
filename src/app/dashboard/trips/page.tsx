@@ -12,7 +12,7 @@ import { readStoredPeriod } from '@/lib/period-cookie'
 import { primeiraFalha } from '@/lib/query'
 import { getSuggestions } from '@/lib/suggestions'
 import { createClient } from '@/lib/supabase/server'
-import { ordenaTrechos } from '@/lib/trips'
+import { faltaLegOrder, ordenaTrechos } from '@/lib/trips'
 import type { PlaceWithLegs } from '@/types'
 
 export const metadata: Metadata = { title: 'Trechos' }
@@ -75,6 +75,17 @@ export default async function TripsPage() {
       </div>
 
       {falha ? <Alert variant="error">{falha.mensagem}</Alert> : null}
+
+      {faltaLegOrder(trips) ? (
+        <div className="rounded-lg border border-onibus/30 bg-onibus-soft px-4 py-3 text-sm leading-relaxed text-onibus-ink">
+          <strong className="font-medium">O banco está sem a coluna de ordem.</strong> Nada
+          está quebrado e nada foi perdido — o app grava e lê normalmente. Só que,
+          sem ela, a ida e a volta de um mesmo lançamento podem trocar de lugar
+          no relatório. Para resolver de vez, rode{' '}
+          <code className="dados">supabase/migrations/001-leg-order.sql</code> no SQL
+          Editor do Supabase.
+        </div>
+      ) : null}
 
       {placesWithLegs.length > 0 ? (
         <Card tone="accent">

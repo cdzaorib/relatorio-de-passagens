@@ -8,7 +8,7 @@ PDF que o financeiro já conhece.
 
 ```bash
 npm run dev        # desenvolvimento
-npm test           # 111 testes, node:test embutido, ~1s
+npm test           # 115 testes, node:test embutido, ~1s
 npm run build      # produção; roda ESLint e TypeScript junto
 ```
 

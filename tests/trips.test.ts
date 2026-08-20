@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 
 import {
   buildDayLegs,
+  faltaLegOrder,
   legsToTrips,
   mirrorLegs,
   ordenaTrechos,
@@ -335,5 +336,25 @@ describe('ordem dos trechos fora do banco', () => {
         ['Cocotá', 'Bananal'],
       ],
     )
+  })
+})
+
+describe('banco sem a coluna de ordem', () => {
+  test('reconhece pela ausência do campo em todas as linhas', () => {
+    assert.equal(faltaLegOrder([{}, {}]), true)
+  })
+
+  test('coluna presente com zero não é ausência', () => {
+    // O default é 0, então zero é um valor de verdade — não pode ser
+    // confundido com "não existe".
+    assert.equal(faltaLegOrder([{ leg_order: 0 }, { leg_order: 0 }]), false)
+  })
+
+  test('uma linha com a coluna já basta para não avisar', () => {
+    assert.equal(faltaLegOrder([{}, { leg_order: 3 }]), false)
+  })
+
+  test('sem trecho nenhum não dá para saber, então não avisa', () => {
+    assert.equal(faltaLegOrder([]), false)
   })
 })

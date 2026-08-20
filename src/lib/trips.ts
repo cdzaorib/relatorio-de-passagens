@@ -121,3 +121,19 @@ export function ordenaTrechos<T extends Ordenavel>(trips: T[], recentesPrimeiro 
     return (a.leg_order ?? 0) - (b.leg_order ?? 0)
   })
 }
+
+/**
+ * Diz se o banco ainda não tem a coluna de ordem, sem custar consulta.
+ *
+ * Agora que a leitura não pede mais leg_order ao banco, nada falha — e o que
+ * não falha não avisa. Sem isto a migração ficaria esquecida para sempre, com
+ * a ida e a volta trocando de lugar de vez em quando e ninguém sabendo por
+ * quê.
+ *
+ * `select('*')` traz todas as colunas: se a coluna existisse, viria em toda
+ * linha, nem que fosse com o zero do default. Indefinida em todas quer dizer
+ * que ela não está lá.
+ */
+export function faltaLegOrder(trips: { leg_order?: number | null }[]): boolean {
+  return trips.length > 0 && trips.every((trip) => trip.leg_order === undefined)
+}
