@@ -104,6 +104,22 @@ propósito.
 Todas as respostas levam `X-Content-Type-Options`, `X-Frame-Options: DENY`,
 `Referrer-Policy`, `Permissions-Policy` e HSTS, e o `X-Powered-By` é omitido.
 
+**Content-Security-Policy com nonce por resposta** (`src/lib/csp.ts`). Script
+injetado no HTML não roda: não há como adivinhar um nonce que muda a cada
+resposta. `connect-src 'self'` fecha a saída de dados — o app pode ser assim
+restrito justamente porque nenhum componente de cliente fala com o Supabase, o
+navegador só conversa com a própria origem. `form-action 'self'` impede um
+formulário injetado de postar a senha digitada para outro servidor, e
+`base-uri 'self'` impede um `<base>` injetado de reescrever todo caminho
+relativo da página.
+
+O nonce obriga toda página a ser renderizada por requisição: HTML
+pré-renderizado carrega o nonce do build, que não vale para resposta nenhuma,
+e o navegador recusaria os scripts do próprio Next. Por isso `/`, `/auth/signup`
+e `/auth/forgot` são `force-dynamic` e o 404 chama `connection()`. Conferido no
+Chromium: zero violação nas cinco rotas, hidratação funcionando, e
+`insertAdjacentHTML` com `<script>` recusado pelo navegador.
+
 ## Perfil e preços
 
 Em `/dashboard/perfil` ficam o nome e o superior imediato (o cabeçalho do

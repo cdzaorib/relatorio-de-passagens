@@ -25,8 +25,11 @@ function startsWithAny(pathname: string, prefixes: string[]) {
  * Precisa devolver a resposta que carrega os cookies atualizados — criar uma
  * NextResponse nova depois daqui perderia a sessão renovada.
  */
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+export async function updateSession(request: NextRequest, headersDaRequisicao: Headers) {
+  // Os headers seguem para a requisição porque o Next lê o nonce do CSP ali
+  // para carimbar os próprios <script>. Criar a resposta sem eles faria o
+  // navegador bloquear o framework inteiro.
+  let supabaseResponse = NextResponse.next({ request: { headers: headersDaRequisicao } })
 
   // Sem configuração não há sessão para renovar nem rota a proteger: as
   // telas mostram o aviso de configuração pendente.
@@ -41,7 +44,7 @@ export async function updateSession(request: NextRequest) {
         for (const { name, value } of cookiesToSet) {
           request.cookies.set(name, value)
         }
-        supabaseResponse = NextResponse.next({ request })
+        supabaseResponse = NextResponse.next({ request: { headers: headersDaRequisicao } })
         for (const { name, value, options } of cookiesToSet) {
           supabaseResponse.cookies.set(name, value, { ...options, ...COOKIE_SEGURO })
         }

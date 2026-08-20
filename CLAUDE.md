@@ -62,6 +62,7 @@ período escolhido fica num cookie.
 | `todayISO()` fixa o fuso em `America/Sao_Paulo` | O servidor roda em UTC e viraria o dia depois das 21h |
 | `parseAmount` recusa `1.234` | Milhar em português, decimal em inglês; chutar dinheiro é pior que pedir de novo |
 | Totais arredondados só no fim | Somar centavos em float acumula `211.09999999999994` |
+| Toda página é renderizada por requisição | O nonce do CSP muda a cada resposta; HTML pré-renderizado traz o nonce do build e o navegador recusa os scripts do Next |
 | `safeRedirectPath` recusa contrabarra | `/\evil.com` parece interno mas o navegador lê como `//evil.com` |
 | PDF usa `pdf-lib` | JavaScript puro: sem binário nem arquivo de fonte para empacotar na Vercel |
 
