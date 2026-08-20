@@ -65,17 +65,30 @@ export function formatDate(value: string): string {
   return DATE.format(date)
 }
 
+const ISO_NO_RIO = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' })
+
 /**
  * Data de hoje no fuso do Rio, em ISO (yyyy-mm-dd).
  * Fixar o fuso evita o servidor em UTC achar que já é amanhã depois das 21h.
  */
 export function todayISO(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date())
+  return ISO_NO_RIO.format(new Date())
 }
 
-/** Data de N dias atrás, no mesmo formato. */
+/**
+ * Data de N dias atrás, no mesmo formato.
+ *
+ * Conta a partir do dia de hoje **no Rio**, não do dia em UTC. Antes ela
+ * subtraía os dias do relógio do servidor e só então formatava no fuso de cá:
+ * entre 21h e meia-noite, quando lá já é o dia seguinte, a janela saía um dia
+ * mais curta. Ancorar no mesmo todayISO que o resto do app usa mantém as duas
+ * pontas da conta no mesmo calendário.
+ */
 export function daysAgoISO(days: number): string {
-  const date = new Date()
-  date.setDate(date.getDate() - days)
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(date)
+  const [ano, mes, dia] = todayISO().split('-').map(Number)
+
+  // UTC aqui é só aritmética de calendário — o fuso já foi resolvido acima.
+  const data = new Date(Date.UTC(ano, mes - 1, dia - days))
+
+  return data.toISOString().slice(0, 10)
 }

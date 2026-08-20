@@ -85,3 +85,26 @@ describe('datas', () => {
     assert.match(daysAgoISO(30), /^\d{4}-\d{2}-\d{2}$/)
   })
 })
+
+describe('contagem de dias para trás', () => {
+  test('anda para trás no calendário do Rio, não no do servidor', () => {
+    const hoje = todayISO()
+    const [ano, mes, dia] = hoje.split('-').map(Number)
+
+    const esperado = new Date(Date.UTC(ano, mes - 1, dia - 30)).toISOString().slice(0, 10)
+    assert.equal(daysAgoISO(30), esperado)
+  })
+
+  test('zero dias é hoje', () => {
+    assert.equal(daysAgoISO(0), todayISO())
+  })
+
+  test('atravessa a virada do mês e do ano sem inventar dia', () => {
+    // A conta passa por Date.UTC, que normaliza sozinho: dia 0 de março é o
+    // último de fevereiro, e isso tem de valer em ano bissexto também.
+    for (const n of [1, 28, 29, 30, 31, 60, 365]) {
+      assert.match(daysAgoISO(n), /^\d{4}-\d{2}-\d{2}$/, `formato quebrou em ${n}`)
+      assert.ok(daysAgoISO(n) < todayISO(), `${n} dias atrás não ficou no passado`)
+    }
+  })
+})
