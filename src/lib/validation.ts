@@ -37,11 +37,52 @@ export function validateEmail(email: string): string | null {
   return null
 }
 
-export function validatePassword(password: string): string | null {
+/**
+ * As senhas que um ataque tenta primeiro. Lista curta de propósito: não é
+ * dicionário, é o punhado que aparece no topo de todo vazamento.
+ */
+const SENHAS_OBVIAS = new Set([
+  '12345678', '123456789', '1234567890', 'password', 'password1', 'senha123',
+  'qwertyui', 'qwerty123', 'abc12345', '11111111', 'iloveyou', 'admin123',
+  'tecnoarte', 'brasil123', 'sucesso1', 'mudar123',
+])
+
+/**
+ * Recusa a senha que cai fácil, sem exigir símbolo nem maiúscula.
+ *
+ * Regra de complexidade não protege: empurra todo mundo para `Senha@123`, que
+ * está em qualquer lista. O que protege é barrar o previsível — e a data de
+ * nascimento em oito dígitos é o exemplo perfeito, porque passa no mínimo de
+ * tamanho e mora no primeiro milhar de tentativas de qualquer ataque.
+ *
+ * `email` entra para impedir a senha ser o próprio endereço, que é o primeiro
+ * palpite depois das listas prontas.
+ */
+export function validatePassword(password: string, email = ''): string | null {
   if (!password) return 'Informe uma senha.'
+
   if (password.length < MIN_PASSWORD_LENGTH) {
     return `A senha precisa ter pelo menos ${MIN_PASSWORD_LENGTH} caracteres.`
   }
+
+  if (SENHAS_OBVIAS.has(password.toLowerCase())) {
+    return 'Essa senha está entre as mais usadas do mundo. Escolha outra.'
+  }
+
+  if (/^\d+$/.test(password)) {
+    return 'Senha só de números — data, telefone, CPF — é a primeira coisa que um ataque tenta. Misture letras.'
+  }
+
+  // 'aaaaaaaa', '12121212', 'abababab': longas no papel, poucas de verdade.
+  if (new Set(password).size < 5) {
+    return 'A senha repete poucos caracteres diferentes. Varie um pouco mais.'
+  }
+
+  const usuario = email.split('@')[0]?.toLowerCase()
+  if (usuario && usuario.length >= 4 && password.toLowerCase().includes(usuario)) {
+    return 'A senha não pode conter o seu e-mail.'
+  }
+
   return null
 }
 

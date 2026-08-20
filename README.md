@@ -80,6 +80,22 @@ E o **Confirm signup** para:
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard
 ```
 
+### Senha e força bruta
+
+Mínimo de oito caracteres, sem exigência de símbolo ou maiúscula — regra de
+complexidade não protege, empurra todo mundo para `Senha@123`, que está em
+qualquer lista. O que a validação faz é recusar o **previsível**: senha só de
+números (data de nascimento em oito dígitos passa no tamanho e mora no
+primeiro milhar de tentativas de qualquer ataque), as poucas que aparecem no
+topo de todo vazamento, as que repetem menos de cinco caracteres distintos, e
+a que contém o próprio e-mail.
+
+O login tem freio de tentativas por origem, e por conta **combinada com a
+origem**. Limitar por e-mail sozinho deixaria qualquer um trancar a conta de
+outra pessoa só errando a senha dela de longe. O limitador vive na memória da
+instância — em serverless é o freio óbvio, não garantia; a trava de verdade é
+a do Supabase Auth.
+
 ### Segredos e privacidade
 
 Chave nenhuma mora no repositório. `.env.local` está no `.gitignore`; em

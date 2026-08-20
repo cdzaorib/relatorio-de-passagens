@@ -32,6 +32,26 @@ export async function login(_prevState: FormState, formData: FormData): Promise<
   if (emailError) return { error: emailError, values }
   if (!password) return { error: 'Informe sua senha.', values }
 
+  /*
+   * Freio de força bruta. As chaves levam a origem de propósito: limitar por
+   * e-mail sozinho deixaria qualquer um trancar a conta de outra pessoa só
+   * errando a senha dela de longe. Assim o ataque de uma origem é freado sem
+   * que ninguém consiga trancar a porta de quem está do outro lado da cidade.
+   *
+   * O limitador vive na memória da instância, então em serverless ele não é
+   * garantia — é o freio óbvio. A trava de verdade é a do Supabase Auth.
+   */
+  const headerList = await headers()
+  const origem = headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'desconhecida'
+
+  const dentroDoLimite =
+    checkRateLimit(`login:origem:${origem}`, 30, 15 * 60 * 1000) &&
+    checkRateLimit(`login:conta:${email}:${origem}`, 10, 15 * 60 * 1000)
+
+  if (!dentroDoLimite) {
+    return { error: 'Muitas tentativas seguidas. Espere alguns minutos.', values }
+  }
+
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -61,7 +81,7 @@ export async function signup(_prevState: FormState, formData: FormData): Promise
   const emailError = validateEmail(email)
   if (emailError) return { error: emailError, values }
 
-  const passwordError = validatePassword(password)
+  const passwordError = validatePassword(password, email)
   if (passwordError) return { error: passwordError, values }
 
   const confirmationError = validatePasswordConfirmation(password, passwordConfirmation)
@@ -161,16 +181,18 @@ export async function updatePassword(
   const password = String(formData.get('password') ?? '')
   const passwordConfirmation = String(formData.get('password_confirmation') ?? '')
 
-  const passwordError = validatePassword(password)
-  if (passwordError) return { error: passwordError }
-
-  const confirmationError = validatePasswordConfirmation(password, passwordConfirmation)
-  if (confirmationError) return { error: confirmationError }
-
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+
+  // O e-mail vem da sessão, não do formulário: aqui ele serve só para impedir
+  // que a senha nova seja o próprio endereço.
+  const passwordError = validatePassword(password, user?.email ?? '')
+  if (passwordError) return { error: passwordError }
+
+  const confirmationError = validatePasswordConfirmation(password, passwordConfirmation)
+  if (confirmationError) return { error: confirmationError }
 
   if (!user) {
     return { error: 'Sua sessão expirou. Peça um novo link de redefinição.' }

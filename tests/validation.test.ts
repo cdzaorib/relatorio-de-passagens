@@ -92,7 +92,9 @@ describe('validação de formulário', () => {
 
   test('senha curta é recusada', () => {
     assert.notEqual(validatePassword('1234567'), null)
-    assert.equal(validatePassword('12345678'), null)
+    // '12345678' tinha oito caracteres e passava. Passar no tamanho não é
+    // passar: hoje ela cai na regra de senha óbvia, logo abaixo.
+    assert.equal(validatePassword('barca323jae'), null)
   })
 
   test('confirmação diferente é recusada', () => {
@@ -130,5 +132,46 @@ describe('tradução dos erros do Supabase', () => {
 
   test('link expirado explica o que fazer', () => {
     assert.match(translateAuthError('Token has expired'), /novo/i)
+  })
+})
+
+describe('qualidade da senha', () => {
+  test('a data de nascimento em oito dígitos é recusada', () => {
+    // Passa no mínimo de tamanho e mora no primeiro milhar de tentativas de
+    // qualquer ataque. É o caso que motivou a regra.
+    for (const senha of ['20042004', '01011990', '12345678']) {
+      assert.notEqual(validatePassword(senha), null, `aceitou ${senha}`)
+    }
+  })
+
+  test('as senhas do topo de todo vazamento são recusadas', () => {
+    for (const senha of ['password', 'senha123', 'QWERTY123', 'iloveyou']) {
+      assert.notEqual(validatePassword(senha), null, `aceitou ${senha}`)
+    }
+  })
+
+  test('poucos caracteres distintos não viram senha longa', () => {
+    assert.notEqual(validatePassword('aaaaaaaa'), null)
+    assert.notEqual(validatePassword('abababababab'), null)
+  })
+
+  test('a senha não pode conter o próprio e-mail', () => {
+    assert.notEqual(validatePassword('carlos.daniel-x9', 'carlos.daniel@tecnoarte.com.br'), null)
+  })
+
+  test('e-mail curto demais não vira regra que atrapalha', () => {
+    // Um usuário 'ana' não pode fazer com que toda senha com 'ana' dentro seja
+    // recusada — 'ana' aparece em 'planalto', 'banana', 'semana'.
+    assert.equal(validatePassword('banana-tropical', 'ana@exemplo.com'), null)
+  })
+
+  test('senha comum de verdade continua passando', () => {
+    for (const senha of ['barca323jae', 'trecho-quinzena', 'Cocota2026!']) {
+      assert.equal(validatePassword(senha, 'pessoa@exemplo.com'), null, `recusou ${senha}`)
+    }
+  })
+
+  test('curta demais continua recusada antes de tudo', () => {
+    assert.match(validatePassword('ab1cd') ?? '', /pelo menos/)
   })
 })
