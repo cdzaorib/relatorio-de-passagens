@@ -323,13 +323,27 @@ drop policy if exists "place_legs_select_own" on public.place_legs;
 create policy "place_legs_select_own" on public.place_legs
   for select using (auth.uid() = user_id);
 
+-- Além do dono da linha, o local apontado tem de ser do mesmo dono. Sem esta
+-- parte dá para gravar um trecho seu pendurado no local de outra pessoa: ela
+-- nunca veria (o select é por user_id), mas o dado fica torto no banco, e
+-- integridade que depende só do app é integridade emprestada.
 drop policy if exists "place_legs_insert_own" on public.place_legs;
 create policy "place_legs_insert_own" on public.place_legs
-  for insert with check (auth.uid() = user_id);
+  for insert with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.places p where p.id = place_id and p.user_id = auth.uid()
+    )
+  );
 
 drop policy if exists "place_legs_update_own" on public.place_legs;
 create policy "place_legs_update_own" on public.place_legs
-  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for update using (auth.uid() = user_id) with check (
+    auth.uid() = user_id
+    and exists (
+      select 1 from public.places p where p.id = place_id and p.user_id = auth.uid()
+    )
+  );
 
 drop policy if exists "place_legs_delete_own" on public.place_legs;
 create policy "place_legs_delete_own" on public.place_legs

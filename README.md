@@ -97,6 +97,21 @@ outra pessoa só errando a senha dela de longe. O limitador vive na memória da
 instância — em serverless é o freio óbvio, não garantia; a trava de verdade é
 a do Supabase Auth.
 
+### RLS
+
+Vinte políticas: os quatro verbos nas cinco tabelas, todas ancoradas em
+`auth.uid()`. O `update` leva `using` **e** `with check`, que é o que impede
+mover uma linha para outro dono — só `using` deixaria passar.
+
+Em `place_legs` a política também confere que o local apontado é do mesmo
+dono. Sem essa parte dá para gravar um trecho seu pendurado no local de outra
+pessoa: ela nunca veria, porque o `select` é por `user_id`, mas o dado fica
+torto. Integridade que depende só do app é integridade emprestada.
+
+O app **não confia só nisso**: toda consulta filtra por `user_id` também. A
+RLS é a defesa; o filtro é o que faz o pior caso ser lista vazia em vez de
+dado alheio, caso uma política caia.
+
 ### Dependências
 
 `npm audit` roda no CI e quebra em severidade alta. As três advisories que
