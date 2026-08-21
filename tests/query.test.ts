@@ -51,6 +51,37 @@ describe('leitura de falha do banco', () => {
     assert.match(falha.mensagem, /RLS/)
   })
 
+  test('PGRST303 é relógio dessincronizado, não banco fora do ar', () => {
+    // Apareceu em uso real. A mensagem genérica mandava esperar o banco voltar
+    // — conselho que nunca resolveria, porque o banco está de pé: quem recusou
+    // foi o PostgREST, ao validar o token, antes de chegar lá.
+    const falha = descreveFalha(erro('PGRST303'))
+
+    assert.equal(falha.motivo, 'relogio')
+    assert.match(falha.mensagem, /rel[óo]gio/i)
+    assert.doesNotMatch(falha.mensagem, /fora do ar/)
+  })
+
+  test('os outros PGRST3xx mandam entrar de novo', () => {
+    for (const code of ['PGRST300', 'PGRST301', 'PGRST302']) {
+      const falha = descreveFalha(erro(code))
+
+      assert.equal(falha.motivo, 'sessao', code)
+      assert.match(falha.mensagem, /Saia e entre de novo/, code)
+    }
+  })
+
+  test('erro de sessão não manda mexer no banco', () => {
+    // Rodar migração não conserta token recusado, e sugerir isso levaria a
+    // pessoa a mexer no schema por nada.
+    for (const code of ['PGRST300', 'PGRST301', 'PGRST302', 'PGRST303']) {
+      const falha = descreveFalha(erro(code))
+
+      assert.equal(falha.schemaDesatualizado, false, code)
+      assert.doesNotMatch(falha.mensagem, /schema\.sql|migrations/, code)
+    }
+  })
+
   test('erro de rede não manda ninguém mexer no banco', () => {
     const falha = descreveFalha(erro('08006'))
 

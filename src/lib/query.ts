@@ -5,7 +5,14 @@ import type { PostgrestError } from '@supabase/supabase-js'
  * Não interessa se foi leitura ou escrita: interessa se a saída é rodar SQL,
  * mexer na RLS ou simplesmente esperar.
  */
-export type MotivoDaFalha = 'tabela' | 'coluna' | 'valor' | 'permissao' | 'desconhecido'
+export type MotivoDaFalha =
+  | 'tabela'
+  | 'coluna'
+  | 'valor'
+  | 'permissao'
+  | 'sessao'
+  | 'relogio'
+  | 'desconhecido'
 
 export type FalhaDeLeitura = {
   motivo: MotivoDaFalha
@@ -42,6 +49,25 @@ const VALOR_RECUSADO = new Set([
   '22023', // invalid_parameter_value
 ])
 
+/*
+ * A família PGRST3xx é de JWT: o PostgREST recusou o token antes de chegar ao
+ * banco. Nada a ver com o schema nem com o banco estar fora do ar — e mandar a
+ * pessoa esperar o banco voltar, como a mensagem genérica fazia, é conselho
+ * que nunca resolve.
+ */
+const SESSAO_RECUSADA = new Set([
+  'PGRST300', // segredo do JWT ausente no servidor
+  'PGRST301', // JWT inválido
+  'PGRST302', // não autenticado
+])
+
+/*
+ * PGRST303 é "JWT issued at future": o relógio de quem valida está atrasado
+ * em relação ao de quem emitiu o token. Passa sozinho quando os relógios se
+ * reencontram, então o conselho aqui é esperar — ao contrário dos outros.
+ */
+const RELOGIO_DESENCONTRADO = new Set(['PGRST303'])
+
 const SEM_PERMISSAO = new Set([
   '42501', // insufficient_privilege
   '.42501', // o mesmo, como o PostgREST às vezes o repassa
@@ -63,6 +89,13 @@ const MENSAGENS: Record<MotivoDaFalha, string> = {
   permissao:
     'O banco recusou o acesso aos seus dados. Normalmente é a RLS: rode ' +
     'supabase/schema.sql de novo, que ele recria as políticas.',
+  sessao:
+    'Sua sessão não foi aceita. Saia e entre de novo — não é problema no seu ' +
+    'lançamento, e nada do que você já gravou foi afetado.',
+  relogio:
+    'Sua sessão foi recusada por desencontro de relógio entre os servidores do ' +
+    'Supabase, não por erro seu. Espere alguns segundos e tente de novo; costuma ' +
+    'passar sozinho. Se insistir, saia e entre de novo para pegar uma sessão nova.',
   // Serve para leitura e para escrita: a pessoa não precisa saber de qual lado
   // deu errado, só que não adianta mexer no banco por causa disso.
   desconhecido:
@@ -80,6 +113,8 @@ function classifica(code: string): MotivoDaFalha {
   if (TABELA_AUSENTE.has(code)) return 'tabela'
   if (COLUNA_AUSENTE.has(code)) return 'coluna'
   if (VALOR_RECUSADO.has(code)) return 'valor'
+  if (RELOGIO_DESENCONTRADO.has(code)) return 'relogio'
+  if (SESSAO_RECUSADA.has(code)) return 'sessao'
   if (SEM_PERMISSAO.has(code)) return 'permissao'
   return 'desconhecido'
 }
